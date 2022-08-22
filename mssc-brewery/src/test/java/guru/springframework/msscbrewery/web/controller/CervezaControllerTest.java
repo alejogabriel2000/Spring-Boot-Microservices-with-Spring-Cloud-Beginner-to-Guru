@@ -38,7 +38,7 @@ public class CervezaControllerTest {
    public void setUp() {
       cervezaValida = CervezaDTO.builder().id(UUID.randomUUID())
                                 .nombreCerveza("Patagonia")
-                                .estiloCerveza("")
+                                .estiloCerveza("PORTER")
                                 .upc(123456789012L)
                                 .build();
    }
@@ -74,9 +74,11 @@ public class CervezaControllerTest {
    @Test
    public void handleActualizacion() throws Exception {
       CervezaDTO cervezaDTO = cervezaValida;
+      cervezaDTO.setId(null);
+
       String cervezaDTOJson = objectMapper.writeValueAsString(cervezaDTO);
 
-      mockMvc.perform(put("/api/v1/cerveza/" + cervezaValida.getId())
+      mockMvc.perform(put("/api/v1/cerveza/" + UUID.randomUUID())
                          .contentType(MediaType.APPLICATION_JSON)
                          .content(cervezaDTOJson))
              .andExpect(status().isNoContent());

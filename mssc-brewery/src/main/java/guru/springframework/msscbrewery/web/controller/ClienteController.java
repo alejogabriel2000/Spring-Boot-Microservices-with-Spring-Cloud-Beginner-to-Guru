@@ -8,6 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ConstraintViolationException;
+import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @RequestMapping("/api/v1/cliente")
@@ -27,7 +31,7 @@ public class ClienteController {
    }
 
 
-   @PostMapping public ResponseEntity handlePost(@RequestBody ClienteDTO clienteDTO) {
+   @PostMapping public ResponseEntity handlePost(@Valid @RequestBody ClienteDTO clienteDTO) {
       ClienteDTO grabarDTO = clienteService.grabarNuevaCliente(clienteDTO);
       HttpHeaders cabeceras = new HttpHeaders();
       cabeceras.add("Location", "/api/v1/cliente/" + grabarDTO.getId().toString());
@@ -37,7 +41,7 @@ public class ClienteController {
 
    @PutMapping({ "/{clienteId}" })
    @ResponseStatus(HttpStatus.NO_CONTENT)
-   public void handleUpdate(@PathVariable("clienteId") UUID clienteId, @RequestBody ClienteDTO clienteDTO) {
+   public void handleUpdate(@PathVariable("clienteId") UUID clienteId, @Valid @RequestBody ClienteDTO clienteDTO) {
       clienteService.actualizarCliente(clienteId, clienteDTO);
    }
 
@@ -46,5 +50,4 @@ public class ClienteController {
    public void borrarcliente(@PathVariable("clienteId") UUID clienteID) {
       clienteService.eliminarById(clienteID);
    }
-
 }

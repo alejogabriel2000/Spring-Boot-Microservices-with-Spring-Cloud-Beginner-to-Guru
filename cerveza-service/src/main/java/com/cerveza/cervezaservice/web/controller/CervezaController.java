@@ -3,6 +3,7 @@ package com.cerveza.cervezaservice.web.controller;
 import com.cerveza.cervezaservice.web.model.CervezaDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -17,14 +18,14 @@ public class CervezaController {
    }
 
    @PostMapping
-   public ResponseEntity grabarNuevaCerveza(@RequestBody CervezaDTO cervezaDTO) {
+   public ResponseEntity grabarNuevaCerveza(@RequestBody @Validated CervezaDTO cervezaDTO) {
 
       return new ResponseEntity(HttpStatus.CREATED);
 
    }
 
    @PutMapping("{cervezaId}")
-   public ResponseEntity actualizarCervezaBuId(@PathVariable("cervezaId") UUID cervezaId, @RequestBody CervezaDTO cervezaDTO) {
+   public ResponseEntity actualizarCervezaBuId(@PathVariable("cervezaId") UUID cervezaId, @RequestBody @Validated CervezaDTO cervezaDTO) {
       return new ResponseEntity(HttpStatus.NO_CONTENT);
    }
 

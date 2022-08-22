@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
 
@@ -25,7 +26,7 @@ import java.util.UUID;
       return new ResponseEntity<>(cervezaService.getCervezaById(cervezaId), HttpStatus.OK);
    }
 
-   @PostMapping public ResponseEntity handlePost(@RequestBody CervezaDTO cervezaDTO) {
+   @PostMapping public ResponseEntity handlePost(@Valid @RequestBody CervezaDTO cervezaDTO) {
       CervezaDTO grabarDTO = cervezaService.grabarNuevaCerveza(cervezaDTO);
       HttpHeaders cabeceras = new HttpHeaders();
       cabeceras.add("Location", "/api/v1/cerveza/" + grabarDTO.getId().toString());
@@ -44,7 +45,7 @@ import java.util.UUID;
         return ResponseEntity.created(location).build();
     }*/
 
-   @PutMapping({ "/{cervezaId}" }) public ResponseEntity handleUpdate(@PathVariable("cervezaId") UUID cervezaId, @RequestBody CervezaDTO cervezaDTO) {
+   @PutMapping({ "/{cervezaId}" }) public ResponseEntity handleUpdate(@PathVariable("cervezaId") UUID cervezaId, @Valid @RequestBody CervezaDTO cervezaDTO) {
       cervezaService.actualizarCerveza(cervezaId, cervezaDTO);
       return new ResponseEntity(HttpStatus.NO_CONTENT);
    }

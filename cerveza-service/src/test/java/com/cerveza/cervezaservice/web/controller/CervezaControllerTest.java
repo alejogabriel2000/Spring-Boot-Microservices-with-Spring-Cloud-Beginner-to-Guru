@@ -1,6 +1,7 @@
 package com.cerveza.cervezaservice.web.controller;
 
 import com.cerveza.cervezaservice.web.model.CervezaDTO;
+import com.cerveza.cervezaservice.web.model.EstiloCervezaEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -29,7 +31,7 @@ class CervezaControllerTest {
 
    @Test void grabarNuevaCerveza() throws Exception {
 
-      CervezaDTO cervezaDTO = CervezaDTO.builder().build();
+      CervezaDTO cervezaDTO = getCervezaDtoValido();
       String cervezaDTOJson = objectMapper.writeValueAsString(cervezaDTO);
 
       mockMvc.perform(post("/api/v1/cerveza/")
@@ -40,7 +42,7 @@ class CervezaControllerTest {
 
    @Test void actualizarCervezaBuId() throws Exception {
 
-      CervezaDTO cervezaDTO = CervezaDTO.builder().build();
+      CervezaDTO cervezaDTO = getCervezaDtoValido();
       String cervezaDTOJson = objectMapper.writeValueAsString(cervezaDTO);
 
       mockMvc.perform(put("/api/v1/cerveza/" + UUID.randomUUID().toString())
@@ -48,5 +50,14 @@ class CervezaControllerTest {
                          .content(cervezaDTOJson))
                         .andExpect(status().isNoContent());
 
+   }
+
+
+   CervezaDTO getCervezaDtoValido() {
+      return CervezaDTO.builder()
+                       .nombreCerveza("Mi cerveza")
+                       .estiloCerverza(EstiloCervezaEnum.ALE)
+                       .precio(new BigDecimal("2.99"))
+                       .upc(1212L).build();
    }
 }

@@ -1,0 +1,46 @@
+# Java maven CircleCI 2.0 archivo de configuracion
+#
+# Leer https://circleci.com/docs/language-java-maven para mas detalle
+#
+
+# https://app.circleci.com/pipelines/github/springframeworkguru/mssc-beer-service
+# Buscar setting - notifaction - status badges (https://circleci.com/gh/github/springframeworkguru/mssc-beer-service/edit#badges)
+# [![CircleCI] (https://circle.com/gh/springframeworkguru/mssc-beer-service.svg?style=svg)] (https://circle.com/gh/springframeworkguru/mssc-beer-service)
+
+
+version 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:11-browsers-legacy
+
+      # Especificar dependencias de servicios aqui si son necesarias
+      # CircleCI maintains a library of pre-built images
+      # documentacion en https://circleci.com/docs/circleci-images
+      # - image: circleci/postgres:9.4
+
+      working:directory: ~repo
+
+      environment:
+        # Customize the JVM maximun head limit
+        MAVEN_OPTS: -Xmx3200m
+
+      steps:
+        - checkout
+
+        # Download and cache dependencies
+        - restore_cache:
+            keys:
+              - v1-dependecies-{{ checksum "pom.xml" }}
+              # fallback to using the latest cache if no exact match is found
+              - v1-dependencies-
+
+        - run: mvn dependency:go-offline
+
+        - save_cache:
+            paths:
+              - ~/.m2
+            key: v1-dependecies-{{ checksum "pom.xml" }}
+
+        # correr test!
+        - run: mvn integration-test

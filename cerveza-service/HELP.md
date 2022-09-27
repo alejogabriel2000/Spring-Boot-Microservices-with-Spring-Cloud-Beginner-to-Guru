@@ -1,3 +1,5 @@
+[![CircleCI] (https://circle.com/gh/springframeworkguru/mssc-beer-service.svg?style=svg)] (https://circle.com/gh/springframeworkguru/mssc-beer-service)
+
 # Getting Started
 
 ### Reference Documentation

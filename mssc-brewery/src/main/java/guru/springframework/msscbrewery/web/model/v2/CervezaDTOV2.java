@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Null;
 import javax.validation.constraints.Positive;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Data
@@ -27,4 +28,8 @@ public class CervezaDTOV2 {
 
    @Positive
    private Long upc;
+
+   private OffsetDateTime fechaCreacion;
+
+   private OffsetDateTime fechaUltModificacion;
 }

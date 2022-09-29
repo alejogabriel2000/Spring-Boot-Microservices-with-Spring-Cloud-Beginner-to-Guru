@@ -2,7 +2,6 @@ package com.cerveza.cervezaservice.web.controller;
 
 import com.cerveza.cervezaservice.web.model.CervezaDTO;
 import com.cerveza.cervezaservice.web.model.EstiloCervezaEnum;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +57,7 @@ class CervezaControllerTest {
                        .nombreCerveza("Mi cerveza")
                        .estiloCerverza(EstiloCervezaEnum.ALE)
                        .precio(new BigDecimal("2.99"))
-                       .upc(1212L).build();
+                       .upc(1212L)
+                       .build();
    }
 }

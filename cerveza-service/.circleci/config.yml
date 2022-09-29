@@ -4,7 +4,7 @@
 #
 
 # https://app.circleci.com/pipelines/github/springframeworkguru/mssc-beer-service
-# Buscar setting - notifaction - status badges (https://circleci.com/gh/github/springframeworkguru/mssc-beer-service/edit#badges)
+# Buscar setting - notification - status badges (https://circleci.com/gh/github/springframeworkguru/mssc-beer-service/edit#badges)
 # [![CircleCI] (https://circle.com/gh/springframeworkguru/mssc-beer-service.svg?style=svg)] (https://circle.com/gh/springframeworkguru/mssc-beer-service)
 
 

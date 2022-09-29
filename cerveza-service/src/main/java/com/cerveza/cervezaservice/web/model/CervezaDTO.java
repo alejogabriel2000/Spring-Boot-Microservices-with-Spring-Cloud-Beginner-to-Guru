@@ -47,4 +47,7 @@ public class CervezaDTO {
 
    private Integer cantidad;
 
+   private Integer stockMinimo;
+   private Integer cantidadAPreparar;
+
 }

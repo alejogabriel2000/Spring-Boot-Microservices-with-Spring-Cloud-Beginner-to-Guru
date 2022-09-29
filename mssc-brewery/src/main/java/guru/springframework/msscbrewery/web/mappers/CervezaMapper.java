@@ -2,9 +2,9 @@ package guru.springframework.msscbrewery.web.mappers;
 
 import guru.springframework.msscbrewery.dominio.Cerveza;
 import guru.springframework.msscbrewery.web.model.CervezaDTO;
-import org.mapstruct.Mapper;
+//import org.mapstruct.Mapper;
 
-@Mapper(uses = {FechaMapper.class})
+//@Mapper(uses = {FechaMapper.class})
 public interface CervezaMapper {
 
    CervezaDTO cervezaToCervezaDTO(Cerveza cerveza);

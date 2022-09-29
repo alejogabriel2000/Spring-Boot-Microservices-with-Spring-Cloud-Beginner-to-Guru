@@ -1,6 +1,5 @@
 package guru.springframework.msscbrewery.services;
 
-import guru.springframework.msscbrewery.web.model.CervezaDTO;
 import guru.springframework.msscbrewery.web.model.ClienteDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

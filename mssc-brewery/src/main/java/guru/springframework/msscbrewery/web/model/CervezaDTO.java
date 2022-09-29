@@ -17,19 +17,19 @@ import java.util.UUID;
 @Builder
 public class CervezaDTO {
 
-    @Null
-    private UUID id;
+   @Null
+   private UUID id;
 
-    @NotBlank
-    private String nombreCerveza;
+   @NotBlank
+   private String nombreCerveza;
 
-    @NotBlank
-    private String estiloCerveza;
+   @NotBlank
+   private String estiloCerveza;
 
-    @Positive
-    private Long upc;
+   @Positive
+   private Long upc;
 
-    private OffsetDateTime fechaCreacion;
+   private OffsetDateTime fechaCreacion;
 
-    private OffsetDateTime fechaUltModificacion;
+   private OffsetDateTime fechaUltModificacion;
 }

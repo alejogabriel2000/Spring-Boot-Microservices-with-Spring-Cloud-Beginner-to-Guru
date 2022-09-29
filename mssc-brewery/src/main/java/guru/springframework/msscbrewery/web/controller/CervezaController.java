@@ -13,7 +13,9 @@ import java.net.URI;
 import java.util.UUID;
 
 @Deprecated
-@RequestMapping("/api/v1/cerveza") @RestController public class CervezaController {
+@RequestMapping("/api/v1/cerveza")
+@RestController
+public class CervezaController {
 
    private final CervezaService cervezaService;
 
@@ -21,12 +23,14 @@ import java.util.UUID;
       this.cervezaService = cervezaService;
    }
 
-   @GetMapping({ "/{cervezaId}" }) public ResponseEntity<CervezaDTO> getCerveza(@PathVariable("cervezaId") UUID cervezaId) {
+   @GetMapping({ "/{cervezaId}" })
+   public ResponseEntity<CervezaDTO> getCerveza(@PathVariable("cervezaId") UUID cervezaId) {
 
       return new ResponseEntity<>(cervezaService.getCervezaById(cervezaId), HttpStatus.OK);
    }
 
-   @PostMapping public ResponseEntity handlePost(@Valid @RequestBody CervezaDTO cervezaDTO) {
+   @PostMapping
+   public ResponseEntity handlePost(@Valid @RequestBody CervezaDTO cervezaDTO) {
       CervezaDTO grabarDTO = cervezaService.grabarNuevaCerveza(cervezaDTO);
       HttpHeaders cabeceras = new HttpHeaders();
       cabeceras.add("Location", "/api/v1/cerveza/" + grabarDTO.getId().toString());
@@ -45,12 +49,13 @@ import java.util.UUID;
         return ResponseEntity.created(location).build();
     }*/
 
-   @PutMapping({ "/{cervezaId}" }) public ResponseEntity handleUpdate(@PathVariable("cervezaId") UUID cervezaId, @Valid @RequestBody CervezaDTO cervezaDTO) {
+   @PutMapping({ "/{cervezaId}" })
+   public ResponseEntity handleUpdate(@PathVariable("cervezaId") UUID cervezaId, @Valid @RequestBody CervezaDTO cervezaDTO) {
       cervezaService.actualizarCerveza(cervezaId, cervezaDTO);
       return new ResponseEntity(HttpStatus.NO_CONTENT);
    }
 
-   @DeleteMapping({"/{cervezaId}"})
+   @DeleteMapping({ "/{cervezaId}" })
    @ResponseStatus(HttpStatus.NO_CONTENT)
    public void borrarcerveza(@PathVariable("cervezaId") UUID cervezaID) {
       cervezaService.eliminarById(cervezaID);

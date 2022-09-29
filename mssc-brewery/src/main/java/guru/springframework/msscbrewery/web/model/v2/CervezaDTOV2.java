@@ -17,16 +17,16 @@ import java.util.UUID;
 @Builder
 public class CervezaDTOV2 {
 
-   @Null
+   //@Null
    private UUID id;
 
-   @NotBlank
+   //@NotBlank
    private String nombreCerveza;
 
-   @NotBlank
+   //@NotBlank
    private CervezaEstiloEnum estiloCerveza;
 
-   @Positive
+   //@Positive
    private Long upc;
 
    private OffsetDateTime fechaCreacion;

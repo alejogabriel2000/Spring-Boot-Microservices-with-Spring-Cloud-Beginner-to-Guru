@@ -1,8 +1,8 @@
 package guru.springframework.msscbrewery.web.controller.v2;
 
-
 import guru.springframework.msscbrewery.services.v2.CervezaServiceV2;
 import guru.springframework.msscbrewery.web.model.v2.CervezaDTOV2;
+import lombok.val;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Validated
-@RequestMapping("/api/v2/cerveza") @RestController
+@RequestMapping("/api/v2/cerveza")
+@RestController
 public class CervezaControllerV2 {
 
    private final CervezaServiceV2 cervezaServiceV2;
@@ -26,14 +27,21 @@ public class CervezaControllerV2 {
       this.cervezaServiceV2 = cervezaServiceV2;
    }
 
-   @GetMapping({ "/{cervezaId}" }) public ResponseEntity<CervezaDTOV2> getCerveza(@NotNull @PathVariable("cervezaId") UUID cervezaId) {
+   @GetMapping({ "/{cervezaId}" })
+   public ResponseEntity<CervezaDTOV2> getCerveza(@NotNull @PathVariable("cervezaId") UUID cervezaId) {
 
       return new ResponseEntity<>(cervezaServiceV2.getCervezaById(cervezaId), HttpStatus.OK);
    }
 
-   @PostMapping public ResponseEntity handlePost(@Valid @NotNull  @RequestBody CervezaDTOV2 cervezaDTO) {
+   @PostMapping
+   public ResponseEntity handlePost(@Valid @NotNull @RequestBody CervezaDTOV2 cervezaDTO) {
       CervezaDTOV2 grabarDTO = cervezaServiceV2.grabarNuevaCerveza(cervezaDTO);
       HttpHeaders cabeceras = new HttpHeaders();
+
+      // lombok le asigna la clase correspondiente
+      //val grabarDTO = cervezaServiceV2.grabarNuevaCerveza(cervezaDTO);
+      //var cabeceras = new HttpHeaders();
+
       cabeceras.add("Location", "/api/v1/cerveza/" + grabarDTO.getId().toString());
       return new ResponseEntity(cabeceras, HttpStatus.CREATED);
 
@@ -50,14 +58,15 @@ public class CervezaControllerV2 {
         return ResponseEntity.created(location).build();
     }*/
 
-   @PutMapping({ "/{cervezaId}" }) public ResponseEntity handleUpdate(@PathVariable("cervezaId") UUID cervezaId, @Valid @RequestBody CervezaDTOV2 cervezaDTO) {
+   @PutMapping({ "/{cervezaId}" })
+   public ResponseEntity handleUpdate(@PathVariable("cervezaId") UUID cervezaId, @Valid @RequestBody CervezaDTOV2 cervezaDTO) {
       cervezaServiceV2.actualizarCerveza(cervezaId, cervezaDTO);
       return new ResponseEntity(HttpStatus.NO_CONTENT);
    }
 
-   @DeleteMapping({"/{cervezaId}"})
+   @DeleteMapping({ "/{cervezaId}" })
    @ResponseStatus(HttpStatus.NO_CONTENT)
-   public void borrarcerveza(UUID cervezaID) {
+   public void borrarcerveza(@PathVariable("cervezaId") UUID cervezaID) {
       cervezaServiceV2.eliminarById(cervezaID);
    }
 }

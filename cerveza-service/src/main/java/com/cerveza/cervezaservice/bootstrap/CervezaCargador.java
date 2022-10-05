@@ -41,6 +41,6 @@ public class CervezaCargador implements CommandLineRunner {
                                         .precio(new BigDecimal("140.50"))
                                         .build());
       }
-      //System.out.println("Cervezas cargadas: " + cervezaRepositorio.count());
+      System.out.println("Cervezas cargadas: " + cervezaRepositorio.count());
    }
 }

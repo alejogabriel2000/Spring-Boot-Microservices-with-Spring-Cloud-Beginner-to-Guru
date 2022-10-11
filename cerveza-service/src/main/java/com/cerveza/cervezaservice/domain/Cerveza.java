@@ -37,7 +37,7 @@ public class Cerveza {
    private String estiloCerveza;
 
    @Column(unique = true)
-   private Long upc;
+   private String upc;
    private BigDecimal precio;
 
    private Integer stockMinimo;

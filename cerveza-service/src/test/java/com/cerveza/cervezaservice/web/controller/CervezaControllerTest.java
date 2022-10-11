@@ -1,7 +1,9 @@
 package com.cerveza.cervezaservice.web.controller;
 
+import com.cerveza.cervezaservice.bootstrap.CervezaCargador;
 import com.cerveza.cervezaservice.domain.Cerveza;
 import com.cerveza.cervezaservice.repositories.CervezaRepositorio;
+import com.cerveza.cervezaservice.services.CervezaService;
 import com.cerveza.cervezaservice.web.model.CervezaDTO;
 import com.cerveza.cervezaservice.web.model.EstiloCervezaEnum;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +28,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,12 +57,20 @@ class CervezaControllerTest {
    @MockBean
    CervezaRepositorio cervezaRepositorio;
 
+   @MockBean
+   CervezaService cervezaService;
+
    @Test
    void getCervezaById() throws Exception {
-      given(cervezaRepositorio.findById(any())).willReturn(Optional.of(Cerveza.builder().build()));
-      //mockMvc.perform(get("/api/v1/cerveza/" + UUID.randomUUID().toString()).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 
-      mockMvc.perform(get("/api/v1/cerveza/{cervezaId}", UUID.randomUUID().toString())
+      //given(cervezaRepositorio.findById(any())).willReturn(Optional.of(Cerveza.builder().build()));
+
+      given(cervezaService.getById(any())).willReturn(getCervezaDtoValido());
+
+      mockMvc.perform(get("/api/v1/cerveza/" + UUID.randomUUID().toString()).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+
+
+/*      mockMvc.perform(get("/api/v1/cerveza/{cervezaId}", UUID.randomUUID().toString())
                          .param("estaFria", "yes")
                          .accept(MediaType.APPLICATION_JSON))
              .andExpect(MockMvcResultMatchers.status().isOk())
@@ -81,8 +92,9 @@ class CervezaControllerTest {
                                 PayloadDocumentation.fieldWithPath("precio").description("Precios"),
                                 PayloadDocumentation.fieldWithPath("cantidad").description("Cantidad de cervezas"),
                                 PayloadDocumentation.fieldWithPath("stockMinimo").description("Stock minimo"),
-                                PayloadDocumentation.fieldWithPath("cantidadAPreparar").description("cantidad a prepara de la cerveza")
-                             )));
+                                PayloadDocumentation.fieldWithPath("cantidadAPreparar").description("cantidad a prepara de la cerveza"),
+                                PayloadDocumentation.fieldWithPath("miFechaLocal").description("Mi fecha local")
+                             )));*/
    }
 
    @Test
@@ -90,9 +102,17 @@ class CervezaControllerTest {
 
       CervezaDTO cervezaDTO = getCervezaDtoValido();
       String cervezaDTOJson = objectMapper.writeValueAsString(cervezaDTO);
-      ConstrainedFields fields = new ConstrainedFields(CervezaDTO.class);
+      //ConstrainedFields fields = new ConstrainedFields(CervezaDTO.class);
+
+      given(cervezaService.grabarNuevaCerveza(any())).willReturn(getCervezaDtoValido());
 
       mockMvc.perform(post("/api/v1/cerveza/")
+                         .contentType(MediaType.APPLICATION_JSON)
+                         .content(cervezaDTOJson))
+             .andExpect(status().isCreated());
+
+
+/*      mockMvc.perform(post("/api/v1/cerveza/")
                          .contentType(MediaType.APPLICATION_JSON)
                          .content(cervezaDTOJson))
                          .andExpect(MockMvcResultMatchers.status().isCreated())
@@ -109,7 +129,7 @@ class CervezaControllerTest {
                                 fields.withPath("cantidad").ignored(),
                                 fields.withPath("stockMinimo").ignored(),
                                 fields.withPath("cantidadAPreparar").ignored()
-                             )));
+                             )));*/
    }
 
    @Test
@@ -128,7 +148,9 @@ class CervezaControllerTest {
                        .nombreCerveza("Mi cerveza")
                        .estiloCerverza(EstiloCervezaEnum.ALE)
                        .precio(new BigDecimal("2.99"))
-                       .upc(1212L)
+                       .upc(CervezaCargador.CERVEZA_1_UPC)
+                       .miFechaLocal(LocalDate.now())
+                       //.id(UUID.randomUUID())
                        .build();
    }
 

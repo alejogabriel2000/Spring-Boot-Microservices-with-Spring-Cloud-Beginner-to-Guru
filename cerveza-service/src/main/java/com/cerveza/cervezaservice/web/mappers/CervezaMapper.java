@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 @Mapper(uses = {FechaMapper.class})
 public interface CervezaMapper {
 
-   CervezaDTO CervezaToCervezaDTO(Cerveza cerveza);
+   CervezaDTO cervezaToCervezaDTO(Cerveza cerveza);
 
-   Cerveza CervezaDtoTOCerveza(CervezaDTO cervezaDTO);
+   Cerveza cervezaDtoTOCerveza(CervezaDTO cervezaDTO);
 }

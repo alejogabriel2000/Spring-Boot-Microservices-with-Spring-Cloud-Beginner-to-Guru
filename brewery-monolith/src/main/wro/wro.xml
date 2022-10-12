@@ -1,6 +1,7 @@
 <groups xmlns="http://www.isdc.ro/wro">
-  <group name="brewery">
-    <css>classpath:META-INF/resources/webjars/bootstrap/3.3.6/less/bootstrap.less</css>
-    <css>/brewery.less</css>
-   </group>
+    <group name="brewery">
+        <css>webjar:bootstrap/3.3.7-1/less/bootstrap.less</css>
+        <css>webjar:bootstrap/3.3.7-1/less/bootstrap.less</css>
+        <css>file:@project.basedir@/src/main/wro/main.less</css>
+    </group>
 </groups>

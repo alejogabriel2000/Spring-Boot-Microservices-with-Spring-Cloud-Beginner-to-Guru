@@ -7,14 +7,13 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.5.RELEASE</version>
-        <relativePath /> <!-- lookup parent from repository -->
+        <version>2.2.1.RELEASE</version>
+        <relativePath />
     </parent>
 
     <groupId>com.stereo</groupId>
     <artifactId>mssc-cerveceria-bom</artifactId>
-    <version>1.0-SNAPSHOT</version>
-
+    <version>1.0.11</version>
     <packaging>pom</packaging>
 
     <licenses>
@@ -31,15 +30,11 @@
     <developers>
         <developer>
             <name>Gabriel</name>
-            <email>gabriel.vecchi@fluxit.com</email>
+            <email>gabriel.alejandro.vecchi@gmail.com</email>
             <organization>Spring Framework guru</organization>
             <organizationUrl>https://www.spring.io</organizationUrl>
         </developer>
     </developers>
-
-    <!--    POR EL VIDEO 144-->
-
-
 
     <properties>
         <java.version>11</java.version>
@@ -47,10 +42,26 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <org.mapstruct.version>1.3.0.Final</org.mapstruct.version>            <!--1.5.3.Final -->
-        <jaxb.version>2.3.1</jaxb.version>
+        <org.mapstruct.version>1.3.1.Final</org.mapstruct.version>            <!--1.5.3.Final -->
+        <jaxb.version>2.3.0</jaxb.version>
         <awaitility.version>4.2.0</awaitility.version>
         <logstash.logback.version>6.3</logstash.logback.version>
+
+        <!-- Agregado del repositorio - POR AHORA NO SE MENCIONO EN LOS VIDEOS-->
+        <maven-enforcer-plugin.version>3.0.0-M2</maven-enforcer-plugin.version>
+        <org.projectlombok.version>1.18.10</org.projectlombok.version>
+        <swagger-request-validator.version>2.7.0</swagger-request-validator.version>
+        <!--Surefire plugin argLine value to suppress UnresolvedMavenProperty -->
+        <argLine>--illegal-access=permit</argLine>
+        <kotlin.version>1.3.50</kotlin.version>
+        <awaitility.version>4.0.1</awaitility.version>
+        <spock.version>1.3-groovy-2.5</spock.version>
+        <spring-boot-admin.version>2.1.6</spring-boot-admin.version>
+        <spring-cloud.version>Hoxton.SR1</spring-cloud.version>
+        <!--set this to your docker acct name-->
+        <docker.image.prefix>sfgbeerworks</docker.image.prefix>
+        <!--Set to name of project-->
+        <docker.image.name>${project.artifactId}</docker.image.name>
     </properties>
 
     <dependencyManagement>
@@ -81,10 +92,40 @@
                 <version>${awaitility.version}</version>
                 <scope>test</scope>
             </dependency>
+
+            <!-- Agregado del repositorio - POR AHORA NO SE MENCIONO EN LOS VIDEOS-->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>de.codecentric</groupId>
+                <artifactId>spring-boot-admin-dependencies</artifactId>
+                <version>${spring-boot-admin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -93,9 +134,16 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+
+        <!-- NO ESTA EN EL REPOSITORIO -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-artemis</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -123,9 +171,13 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>org.springframework.statemachine</groupId>
+            <artifactId>spring-statemachine-core</artifactId>
+            <version>2.1.3.RELEASE</version>   <!-- 3.2.0 ULTIMA VERSION-->
+        </dependency>
+        <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>${org.mapstruct.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -140,6 +192,11 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -160,7 +217,52 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- Agregado del repositorio - POR AHORA NO SE MENCIONO EN LOS VIDEOS-->
+        <dependency>
+            <groupId>org.spockframework</groupId>
+            <artifactId>spock-spring</artifactId>
+            <version>${spock.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.spockframework</groupId>
+            <artifactId>spock-core</artifactId>
+            <version>${spock.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.JensPiegsa</groupId>
+            <artifactId>wiremock-extension</artifactId>
+            <version>0.4.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.atlassian.oai</groupId>
+            <artifactId>swagger-request-validator-mockmvc</artifactId>
+            <version>${swagger-request-validator.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.oai</groupId>
+            <artifactId>swagger-request-validator-springmvc</artifactId>
+            <version>${swagger-request-validator.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
+
+
+    <repositories>
+        <!--        Needed for Spring Milestone Releases-->
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
@@ -231,6 +333,242 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Agregado del repositorio - POR AHORA NO SE MENCIONO EN LOS VIDEOS-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.6.0.1398</version>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.3</version>
+                <executions>
+                    <!--
+                         Prepares the property pointing to the JaCoCo runtime agent which
+                         is passed as VM argument when the Maven Surefire plugin is executed.
+                     -->
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Sets the path to the file which contains the execution data.
+                                 ============
+                                 Defaults to ${project.build.directory}/jacoco.exec              -->
+                            <!--<destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>-->
+                            <!--
+                                Sets the name of the property containing the settings
+                                for JaCoCo runtime agent.
+                                =============
+                                Defaults to "argLine"
+                            -->
+                            <!--<propertyName>surefireArgLine</propertyName>-->
+                        </configuration>
+                    </execution>
+                    <!--
+                        Ensures that the code coverage report for unit tests is created after
+                        unit tests have been run.
+                    -->
+                    <execution>
+                        <id>post-unit-test</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Sets the path to the file which contains the execution data.
+                                 ================
+                                 Defaults to ${project.build.directory}/jacoco.exec           -->
+                            <!--<dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>-->
+                            <!-- Sets the output directory for the code coverage report.
+                                 ================
+                                 Defaults to ${project.reporting.outputDirectory}/jacoco      -->
+                            <!--<outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>-->
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>pre-integration-test</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Sets the path to the file which contains the execution data. -->
+                            <!--<destFile>${project.build.directory}/coverage-reports/jacoco-it.exec</destFile>-->
+                            <!--
+                                Sets the name of the property containing the settings
+                                for JaCoCo runtime agent.
+                            -->
+                            <!--<propertyName>failsafeArgLine</propertyName>-->
+                        </configuration>
+                    </execution>
+                    <!--
+                        Ensures that the code coverage report for integration tests after
+                        integration tests have been run.
+                    -->
+                    <execution>
+                        <id>post-integration-test</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Sets the path to the file which contains the execution data.
+                                 ===========
+                                 Defaults to ${project.build.directory/jacoco.exec}             -->
+                            <!--<dataFile>${project.build.directory}/coverage-reports/jacoco-it.exec</dataFile>-->
+                            <!-- Sets the output directory for the code coverage report.
+                                 ===========
+                                 Defaults to ${project.reporting.outputDirectory/jacoco}-->
+                            <!--<outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>-->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.31.0</version>
+                <configuration>
+                    <!--<dockerHost>http://127.0.0.1:2375</dockerHost>-->
+                    <dockerHost>unix:///var/run/docker.sock</dockerHost>
+                    <verbose>true</verbose>
+                    <images>
+                        <image>
+                            <name>${docker.image.prefix}/${docker.image.name}</name>
+                            <alias>${project.artifactId}</alias>
+                            <build>
+                                <!--copies artifact to docker build dir in target-->
+                                <assembly>
+                                    <descriptorRef>artifact</descriptorRef>
+                                </assembly>
+                                <dockerFile>Dockerfile</dockerFile>
+                                <tags>
+                                    <tag>latest</tag>
+                                    <tag>${project.version}</tag>
+                                </tags>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+            </plugin>
         </plugins>
+
+        <!-- Agregado del repositorio - POR AHORA NO SE MENCIONO EN LOS VIDEOS-->
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>3.6.0.1398</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
+
+    <!-- Agregado del repositorio hasta el final de pom - POR AHORA NO SE MENCIONO EN LOS VIDEOS-->
+    <profiles>
+        <profile>
+            <id>ossrh</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.0.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.0.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+<!--    <scm>
+        <connection>scm:git:git@github.com:sfg-beer-works/sfg-beer-works-bom.git</connection>
+        <developerConnection>scm:git:git@github.com:sfg-beer-works/sfg-beer-works-bom.git</developerConnection>
+        <url>https://github.com/sfg-beer-works/sfg-beer-works-bom</url>
+        <tag>sfg-beer-works-bom-1.0.16</tag>
+    </scm>
+
+    <issueManagement>
+        <url>https://github.com/sfg-beer-works/sfg-beer-works/issues</url>
+        <system>GitHub</system>
+    </issueManagement>
+-->
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+    </distributionManagement>
+
 </project>

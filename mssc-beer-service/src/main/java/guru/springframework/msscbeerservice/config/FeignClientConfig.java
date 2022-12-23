@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Created by jt on 5/16/20.
  */
-@Configuration
+//@Configuration
 public class FeignClientConfig {
 
     @Bean

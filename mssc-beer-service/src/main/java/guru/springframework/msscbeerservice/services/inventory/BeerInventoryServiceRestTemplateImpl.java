@@ -34,12 +34,8 @@ public class BeerInventoryServiceRestTemplateImpl implements BeerInventoryServic
         this.beerInventoryServiceHost = beerInventoryServiceHost;
     }
 
-    public BeerInventoryServiceRestTemplateImpl(RestTemplateBuilder restTemplateBuilder,
-                                                @Value("${sfg.brewery.inventory-user}") String inventoryUser,
-                                                @Value("${sfg.brewery.inventory-password}")String inventoryPassword) {
-        this.restTemplate = restTemplateBuilder
-                .basicAuthentication(inventoryUser, inventoryPassword)
-                .build();
+    public BeerInventoryServiceRestTemplateImpl(RestTemplateBuilder restTemplateBuilder) {
+        this.restTemplate = restTemplateBuilder.build();
     }
 
     @Override

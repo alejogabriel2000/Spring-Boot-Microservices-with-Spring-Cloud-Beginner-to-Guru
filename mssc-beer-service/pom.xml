@@ -3,19 +3,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- https://github.com/sfg-beer-works/sfg-brewery-bom -->
-    <!-- https://github.com/sfg-beer-works/sfg-beer-works-bom -->
-
-    <!--  <parent>
-        <groupId>com.stereo</groupId>
-        <artifactId>mssc-cerveceria-bom</artifactId>
-        <version>1.0-SNAPSHOT</version>
-    </parent> -->
-
-    <parent>
+    <!-- <parent>
         <groupId>com.github.sfg-beer-works</groupId>
         <artifactId>sfg-brewery-bom</artifactId>
-        <version>1.0.17</version>
+        <version>1.0.11</version>
+    </parent> -->
+    
+    <parent>
+        <groupId>com.stereo</groupId>
+        <artifactId>mssc-cerveceria-bom</artifactId>
+        <version>1.0.11</version>
     </parent>
 
     <artifactId>mssc-beer-service</artifactId>

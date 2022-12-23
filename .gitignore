@@ -12,3 +12,5 @@ mssc-beer-service/.idea/
 mssc-beer-service/target/
 mssc-cerveceria-bom/.mvn/
 sf-jms/.mvn/
+mssc-cerveceria-bom/target/
+mssc-ssm/.mvn/

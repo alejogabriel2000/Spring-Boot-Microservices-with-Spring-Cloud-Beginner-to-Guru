@@ -1,6 +1,6 @@
 package guru.sfg.beer.order.service.services.cerveza;
 
-import guru.sfg.beer.order.service.web.model.CervezaDTO;
+import guru.sfg.brewery.model.CervezaDTO;
 
 import java.util.Optional;
 import java.util.UUID;

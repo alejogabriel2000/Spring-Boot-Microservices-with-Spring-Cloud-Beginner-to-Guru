@@ -1,6 +1,6 @@
 package guru.sfg.beer.order.service.services.cerveza;
 
-import guru.sfg.beer.order.service.web.model.CervezaDTO;
+import guru.sfg.brewery.model.CervezaDTO;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;

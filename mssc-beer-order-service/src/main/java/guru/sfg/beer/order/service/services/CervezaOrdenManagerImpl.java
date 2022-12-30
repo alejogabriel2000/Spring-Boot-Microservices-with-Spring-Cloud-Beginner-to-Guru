@@ -1,5 +1,7 @@
 package guru.sfg.beer.order.service.services;
 
+import java.util.UUID;
+
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
@@ -34,30 +36,29 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
       return ordenCervezaGuardada;
    }
 
-   private void enviarCervezaOrdenEvento(BeerOrder beerOrder, OrdenEventoCervezaEnum ordenEventoCervezaEnum ) {
+   @Override
+   public void procesarValidacionResponse(UUID cervezaOrdenId, Boolean esValido) {
+      BeerOrder beerOrder = beerOrderRepository.getOne(cervezaOrdenId);
+      if (esValido) {
+         enviarCervezaOrdenEvento(beerOrder, OrdenEventoCervezaEnum.VALIDACION_APROBADA);
+      } else {
+         enviarCervezaOrdenEvento(beerOrder, OrdenEventoCervezaEnum.VALIDACION_FALLIDA);
+      }
+   }
+
+   private void enviarCervezaOrdenEvento(BeerOrder beerOrder, OrdenEventoCervezaEnum ordenEventoCervezaEnum) {
       StateMachine<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> sm = build(beerOrder);
-
-      Message msg = MessageBuilder.withPayload(ordenEventoCervezaEnum)
-         .setHeader(ORDEN_ID_HEADER, beerOrder.getId().toString())
-         .build();
-
+      Message msg = MessageBuilder.withPayload(ordenEventoCervezaEnum).setHeader(ORDEN_ID_HEADER, beerOrder.getId().toString()).build();
       sm.sendEvent(msg);
-
    }
 
    private StateMachine<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> build(BeerOrder beerOrder) {
-
       StateMachine<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> sm = stateMachineFactory.getStateMachine(beerOrder.getId());
-
       sm.stop();
-
-      sm.getStateMachineAccessor()
-         .doWithAllRegions(sma -> {
-            sma.addStateMachineInterceptor(cervezaOrdenEstadoCambioInterceptor);
-            sma.resetStateMachine(new DefaultStateMachineContext<>(beerOrder.getOrderStatus(), null, null, null));
-         });
-
+      sm.getStateMachineAccessor().doWithAllRegions(sma -> {
+         sma.addStateMachineInterceptor(cervezaOrdenEstadoCambioInterceptor);
+         sma.resetStateMachine(new DefaultStateMachineContext<>(beerOrder.getOrderStatus(), null, null, null));
+      });
       return sm;
-
    }
 }

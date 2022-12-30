@@ -41,6 +41,10 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
       BeerOrder beerOrder = beerOrderRepository.getOne(cervezaOrdenId);
       if (esValido) {
          enviarCervezaOrdenEvento(beerOrder, OrdenEventoCervezaEnum.VALIDACION_APROBADA);
+         BeerOrder ordenValidada = beerOrderRepository.findOneById(cervezaOrdenId);
+
+         enviarCervezaOrdenEvento(beerOrder, OrdenEventoCervezaEnum.ASIGNAR_PEDIDO);
+
       } else {
          enviarCervezaOrdenEvento(beerOrder, OrdenEventoCervezaEnum.VALIDACION_FALLIDA);
       }

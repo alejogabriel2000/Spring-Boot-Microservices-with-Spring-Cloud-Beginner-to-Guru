@@ -19,6 +19,8 @@ import java.util.EnumSet;
 public class OrdenCervezaStateMachineConfig extends StateMachineConfigurerAdapter<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> {
 
    private final Action<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> validacionOrdenAction;
+   private final Action<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> asignarOrdenAction;
+
    @Override
    public void configure(StateMachineStateConfigurer<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> estados) throws Exception {
 
@@ -43,6 +45,10 @@ public class OrdenCervezaStateMachineConfig extends StateMachineConfigurerAdapte
             .event(OrdenEventoCervezaEnum.VALIDACION_APROBADA)
          .and().withExternal()
             .source(OrdenEstadoCervezaEnum.NUEVO).target(OrdenEstadoCervezaEnum.VALIDACION_EXCEPCION)
-            .event(OrdenEventoCervezaEnum.VALIDACION_FALLIDA);
+            .event(OrdenEventoCervezaEnum.VALIDACION_FALLIDA)
+         .and().withExternal()
+             .source(OrdenEstadoCervezaEnum.VALIDADO).target(OrdenEstadoCervezaEnum.ASIGNADO_PENDIENTE)
+             .event(OrdenEventoCervezaEnum.ASIGNAR_PEDIDO)
+             .action(asignarOrdenAction);
    }
 }

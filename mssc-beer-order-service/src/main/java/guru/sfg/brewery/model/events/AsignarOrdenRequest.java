@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ValidarOrdenRequest {
+public class AsignarOrdenRequest {
    private BeerOrderDto cervezaOrden;
 }

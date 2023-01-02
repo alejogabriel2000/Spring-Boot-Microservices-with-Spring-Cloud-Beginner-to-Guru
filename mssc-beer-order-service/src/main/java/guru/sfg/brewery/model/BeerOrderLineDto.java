@@ -20,7 +20,6 @@ package guru.sfg.brewery.model;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
@@ -56,4 +55,5 @@ public class BeerOrderLineDto {
     private UUID beerId;
     private Integer orderQuantity = 0;
     private BigDecimal price;
+   private Integer quantityAllocated;
 }

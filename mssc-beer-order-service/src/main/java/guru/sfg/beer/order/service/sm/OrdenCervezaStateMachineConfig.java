@@ -49,6 +49,15 @@ public class OrdenCervezaStateMachineConfig extends StateMachineConfigurerAdapte
          .and().withExternal()
              .source(OrdenEstadoCervezaEnum.VALIDADO).target(OrdenEstadoCervezaEnum.ASIGNADO_PENDIENTE)
              .event(OrdenEventoCervezaEnum.ASIGNAR_PEDIDO)
-             .action(asignarOrdenAction);
+             .action(asignarOrdenAction)
+         .and().withExternal()
+             .source(OrdenEstadoCervezaEnum.ASIGNADO_PENDIENTE).target(OrdenEstadoCervezaEnum.ASIGNADO)
+             .event(OrdenEventoCervezaEnum.ASIGNACION_EXITOSA)
+         .and().withExternal()
+              .source(OrdenEstadoCervezaEnum.ASIGNADO_PENDIENTE).target(OrdenEstadoCervezaEnum.ASIGNACION_EXCEPCION)
+              .event(OrdenEventoCervezaEnum.ASIGNACION_FALLIDA)
+         .and().withExternal()
+              .source(OrdenEstadoCervezaEnum.ASIGNADO_PENDIENTE).target(OrdenEstadoCervezaEnum.INVENTARIO_PENDIENTE)
+              .event(OrdenEventoCervezaEnum.ASIGNACION_SIN_INVENTARIO);
    }
 }

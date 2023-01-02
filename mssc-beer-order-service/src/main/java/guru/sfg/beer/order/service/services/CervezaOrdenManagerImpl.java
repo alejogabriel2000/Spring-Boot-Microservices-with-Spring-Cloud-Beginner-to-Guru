@@ -15,6 +15,7 @@ import guru.sfg.beer.order.service.domain.OrdenEstadoCervezaEnum;
 import guru.sfg.beer.order.service.domain.OrdenEventoCervezaEnum;
 import guru.sfg.beer.order.service.repositories.BeerOrderRepository;
 import guru.sfg.beer.order.service.sm.CervezaOrdenEstadoCambioInterceptor;
+import guru.sfg.brewery.model.BeerOrderDto;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -42,12 +43,43 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
       if (esValido) {
          enviarCervezaOrdenEvento(beerOrder, OrdenEventoCervezaEnum.VALIDACION_APROBADA);
          BeerOrder ordenValidada = beerOrderRepository.findOneById(cervezaOrdenId);
-
          enviarCervezaOrdenEvento(beerOrder, OrdenEventoCervezaEnum.ASIGNAR_PEDIDO);
-
       } else {
          enviarCervezaOrdenEvento(beerOrder, OrdenEventoCervezaEnum.VALIDACION_FALLIDA);
       }
+   }
+
+   @Override
+   public void cervezaOrdenUbicacionAprobado(BeerOrderDto cervezaOrdenDto) {
+      BeerOrder cervezaOrden = beerOrderRepository.getOne(cervezaOrdenDto.getId());
+      enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.ASIGNACION_EXITOSA);
+      actualizarUbicacionCantidad(cervezaOrdenDto, cervezaOrden);
+   }
+
+   private void actualizarUbicacionCantidad(BeerOrderDto cervezaOrdenDto, BeerOrder cervezaOrden) {
+      BeerOrder ubicacionOrden = beerOrderRepository.getOne(cervezaOrdenDto.getId());
+
+      ubicacionOrden.getBeerOrderLines().forEach(cervezaOrdenLine -> {
+         cervezaOrdenDto.getBeerOrderLines().forEach(cervezaOrdenLineDto -> {
+            if (cervezaOrdenLine.getId().equals(cervezaOrdenLineDto.getId())) {
+               cervezaOrdenLine.setQuantityAllocated(cervezaOrdenLineDto.getQuantityAllocated());
+            }
+         });
+      });
+      beerOrderRepository.saveAndFlush(cervezaOrden);
+   }
+
+   @Override
+   public void cervezaOrdenUbicaionPendienteInventario(BeerOrderDto cervezaOrdenDto) {
+      BeerOrder cervezaOrden = beerOrderRepository.getOne(cervezaOrdenDto.getId());
+      enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.ASIGNACION_SIN_INVENTARIO);
+      actualizarUbicacionCantidad(cervezaOrdenDto, cervezaOrden);
+   }
+
+   @Override
+   public void cervezaOrdenUbicacionError(BeerOrderDto cervezaOrdenDto) {
+      BeerOrder cervezaOrden = beerOrderRepository.getOne(cervezaOrdenDto.getId());
+      enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.ASIGNACION_FALLIDA);
    }
 
    private void enviarCervezaOrdenEvento(BeerOrder beerOrder, OrdenEventoCervezaEnum ordenEventoCervezaEnum) {

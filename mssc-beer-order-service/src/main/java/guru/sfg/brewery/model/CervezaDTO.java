@@ -1,5 +1,6 @@
 package guru.sfg.brewery.model;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +9,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@Builder
 public class CervezaDTO {
 
    private UUID id;
@@ -16,7 +18,8 @@ public class CervezaDTO {
 
    private String beerStyle;
 
-   private BigDecimal price;
+   private String upc;
 
+   private BigDecimal price;
 
 }

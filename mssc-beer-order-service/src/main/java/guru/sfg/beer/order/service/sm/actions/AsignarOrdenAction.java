@@ -1,5 +1,6 @@
 package guru.sfg.beer.order.service.sm.actions;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.jms.core.JmsTemplate;
@@ -14,7 +15,8 @@ import guru.sfg.beer.order.service.domain.OrdenEventoCervezaEnum;
 import guru.sfg.beer.order.service.repositories.BeerOrderRepository;
 import guru.sfg.beer.order.service.services.CervezaOrdenManagerImpl;
 import guru.sfg.beer.order.service.web.mappers.BeerOrderMapper;
-import guru.sfg.brewery.model.events.ValidarOrdenRequest;
+import guru.sfg.brewery.model.events.AsignarOrdenRequest;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,10 +33,13 @@ public class AsignarOrdenAction implements Action<OrdenEstadoCervezaEnum, OrdenE
    public void execute(StateContext<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> stateContext) {
 
       String cervezaOrdenId = (String) stateContext.getMessage().getHeaders().get(CervezaOrdenManagerImpl.ORDEN_ID_HEADER);
-      BeerOrder cervezaOrden = beerOrderRepository.findById(UUID.fromString(cervezaOrdenId)).get();
-
-      jmsTemplate.convertAndSend(JmsConfig.ASIGNAR_ORDEN_QUEUE, beerOrderMapper.beerOrderToDto(cervezaOrden));
-
+      Optional<BeerOrder> cervezaOrdenOptional = beerOrderRepository.findById(UUID.fromString(cervezaOrdenId));
+      cervezaOrdenOptional.ifPresentOrElse(cervezaOrden -> {
+         jmsTemplate.convertAndSend(JmsConfig.ASIGNAR_ORDEN_QUEUE, AsignarOrdenRequest.builder()
+                           .cervezaOrden(beerOrderMapper.beerOrderToDto(cervezaOrden))
+                           .build());
+         log.debug("Enviada ubicacion request para la orden con ID: " + cervezaOrdenId);
+      }, () -> log.error("Orden de cerveza no encontrado"));
       log.debug("Envio request de asignacion a la queue para la orden Id: " + cervezaOrdenId);
    }
 }

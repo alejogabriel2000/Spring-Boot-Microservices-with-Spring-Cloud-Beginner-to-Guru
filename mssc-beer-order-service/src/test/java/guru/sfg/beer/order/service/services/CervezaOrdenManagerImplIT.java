@@ -95,7 +95,6 @@ public class CervezaOrdenManagerImplIT {
    @Test
    public void testNuevoAUbicacion() throws JsonProcessingException, InterruptedException {
       CervezaDTO cervezaDTO = CervezaDTO.builder().id(cervezaID).upc("12345").build();
-      //CervezaListaPaginada lista = new CervezaListaPaginada(Arrays.asList(cervezaDTO));
       wireMockServer.stubFor(get(CervezaServiceImpl.CERVEZA_UPC_PATH_V1 + "12345")
                                 .willReturn(okJson(objectMapper.writeValueAsString(cervezaDTO))));
       BeerOrder cervezaOrden = crearOrdenCerveza();
@@ -103,12 +102,20 @@ public class CervezaOrdenManagerImplIT {
 
       await().untilAsserted(() -> {
          BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).get();
+         assertEquals(OrdenEstadoCervezaEnum.ASIGNADO, encontrarOrden.getOrderStatus());
+      });
 
-         assertEquals(OrdenEstadoCervezaEnum.ASIGNADO_PENDIENTE, encontrarOrden.getOrderStatus());
+      await().untilAsserted(() -> {
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).get();
+         BeerOrderLine line = encontrarOrden.getBeerOrderLines().iterator().next();
+         assertEquals(line.getOrderQuantity(), line.getQuantityAllocated());
       });
 
       BeerOrder cervezaOrdenGuardada2 = beerOrderRepository.findById(cervezaOrden.getId()).get();
-      assertNotNull(cervezaOrdenGuardada);
+      assertNotNull(cervezaOrdenGuardada2);
       assertEquals(OrdenEstadoCervezaEnum.ASIGNADO, cervezaOrdenGuardada2.getOrderStatus());
+      cervezaOrdenGuardada2.getBeerOrderLines().forEach(line -> {
+         assertEquals(line.getOrderQuantity(), line.getQuantityAllocated());
+      });
    }
 }

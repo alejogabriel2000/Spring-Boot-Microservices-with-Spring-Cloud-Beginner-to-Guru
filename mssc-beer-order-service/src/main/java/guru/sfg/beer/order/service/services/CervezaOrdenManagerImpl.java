@@ -62,21 +62,24 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
       Optional<BeerOrder> cervezaOrdenOptional = beerOrderRepository.findById(cervezaOrdenDto.getId());
       cervezaOrdenOptional.ifPresentOrElse(cervezaOrden -> {
          enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.ASIGNACION_EXITOSA);
-         actualizarUbicacionCantidad(cervezaOrdenDto, cervezaOrden);
+         actualizarUbicacionCantidad(cervezaOrdenDto);
       }, () -> log.error("Orden no encontrada. Id: " + cervezaOrdenDto.getId()));
    }
 
-   private void actualizarUbicacionCantidad(BeerOrderDto cervezaOrdenDto, BeerOrder cervezaOrden) {
-      BeerOrder ubicacionOrden = beerOrderRepository.getOne(cervezaOrdenDto.getId());
+   private void actualizarUbicacionCantidad(BeerOrderDto cervezaOrdenDto) {
+      Optional<BeerOrder> ubicacionOrdenOptional = beerOrderRepository.findById(cervezaOrdenDto.getId());
 
-      ubicacionOrden.getBeerOrderLines().forEach(cervezaOrdenLine -> {
-         cervezaOrdenDto.getBeerOrderLines().forEach(cervezaOrdenLineDto -> {
-            if (cervezaOrdenLine.getId().equals(cervezaOrdenLineDto.getId())) {
-               cervezaOrdenLine.setQuantityAllocated(cervezaOrdenLineDto.getQuantityAllocated());
-            }
+      ubicacionOrdenOptional.ifPresentOrElse(ubicacionOrden -> {
+         ubicacionOrden.getBeerOrderLines().forEach(cervezaOrdenLine -> {
+            cervezaOrdenDto.getBeerOrderLines().forEach(cervezaOrdenLineDto -> {
+               if (cervezaOrdenLine.getId().equals(cervezaOrdenLineDto.getId())) {
+                  cervezaOrdenLine.setQuantityAllocated(cervezaOrdenLineDto.getQuantityAllocated());
+               }
+            });
          });
-      });
-      beerOrderRepository.saveAndFlush(cervezaOrden);
+         beerOrderRepository.saveAndFlush(ubicacionOrden);
+
+      }, () -> log.error("Orden no encontrada. Id: " + cervezaOrdenDto.getId()));
    }
 
    @Override
@@ -86,7 +89,7 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
 
       cervezaOrdenOptional.ifPresentOrElse(cervezaOrden -> {
          enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.ASIGNACION_SIN_INVENTARIO);
-         actualizarUbicacionCantidad(cervezaOrdenDto, cervezaOrden);
+         actualizarUbicacionCantidad(cervezaOrdenDto);
       }, () -> log.error("Orden no encontrada. Id: " + cervezaOrdenDto.getId()));
    }
 

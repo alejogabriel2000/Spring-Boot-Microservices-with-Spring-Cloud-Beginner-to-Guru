@@ -102,6 +102,14 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
       }, () -> log.error("Orden no encontrada. Id: " + cervezaOrdenDto.getId()));
    }
 
+   @Override
+   public void cervezaOrdenTomar(UUID id) {
+      Optional<BeerOrder> cervezaOrdenOptional = beerOrderRepository.findById(id);
+      cervezaOrdenOptional.ifPresentOrElse(cervezaOrden -> {
+         enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.PEDIDO_CERVEZA_ENTREGADO);
+      }, () -> log.error("Orden no encontrada. Id: " + id));
+   }
+
    private void enviarCervezaOrdenEvento(BeerOrder beerOrder, OrdenEventoCervezaEnum ordenEventoCervezaEnum) {
       StateMachine<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> sm = build(beerOrder);
       Message msg = MessageBuilder.withPayload(ordenEventoCervezaEnum)

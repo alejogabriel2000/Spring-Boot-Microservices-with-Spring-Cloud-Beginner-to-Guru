@@ -16,4 +16,6 @@ public interface CervezaOrdenManager {
    void cervezaOrdenUbicacionPendienteInventario(BeerOrderDto cervezaOrden);
 
    void cervezaOrdenUbicacionError(BeerOrderDto cervezaOrden);
+
+   void cervezaOrdenTomar(UUID id);
 }

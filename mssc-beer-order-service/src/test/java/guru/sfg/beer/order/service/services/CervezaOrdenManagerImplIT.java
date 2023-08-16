@@ -32,7 +32,6 @@ import guru.sfg.brewery.model.CervezaListaPaginada;
 import static com.github.jenspiegsa.wiremockextension.ManagedWireMockServer.with;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static org.awaitility.Awaitility.await;
 import static org.jgroups.util.Util.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

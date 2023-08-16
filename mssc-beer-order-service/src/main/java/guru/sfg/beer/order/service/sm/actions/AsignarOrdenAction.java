@@ -31,7 +31,7 @@ public class AsignarOrdenAction implements Action<OrdenEstadoCervezaEnum, OrdenE
    public void execute(StateContext<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> stateContext) {
 
       String cervezaOrdenId = (String) stateContext.getMessage().getHeaders().get(CervezaOrdenManagerImpl.ORDEN_ID_HEADER);
-      BeerOrder cervezaOrden = beerOrderRepository.findOneById(UUID.fromString(cervezaOrdenId));
+      BeerOrder cervezaOrden = beerOrderRepository.findById(UUID.fromString(cervezaOrdenId)).get();
 
       jmsTemplate.convertAndSend(JmsConfig.ASIGNAR_ORDEN_QUEUE, beerOrderMapper.beerOrderToDto(cervezaOrden));
 

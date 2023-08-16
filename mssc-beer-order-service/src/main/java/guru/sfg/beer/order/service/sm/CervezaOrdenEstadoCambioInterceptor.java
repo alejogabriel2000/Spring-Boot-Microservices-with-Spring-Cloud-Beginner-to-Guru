@@ -9,6 +9,7 @@ import org.springframework.statemachine.state.State;
 import org.springframework.statemachine.support.StateMachineInterceptorAdapter;
 import org.springframework.statemachine.transition.Transition;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import guru.sfg.beer.order.service.domain.BeerOrder;
 import guru.sfg.beer.order.service.domain.OrdenEstadoCervezaEnum;
@@ -25,6 +26,7 @@ public class CervezaOrdenEstadoCambioInterceptor extends StateMachineInterceptor
 
    private final BeerOrderRepository beerOrderRepository;
 
+   @Transactional
    @Override
    public void preStateChange(State<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> state, Message<OrdenEventoCervezaEnum> message,
                               Transition<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> transition,

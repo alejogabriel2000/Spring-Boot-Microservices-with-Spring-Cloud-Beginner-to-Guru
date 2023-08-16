@@ -13,7 +13,7 @@ public interface CervezaOrdenManager {
 
    void cervezaOrdenUbicacionAprobado(BeerOrderDto cervezaOrden);
 
-   void cervezaOrdenUbicaionPendienteInventario(BeerOrderDto cervezaOrden);
+   void cervezaOrdenUbicacionPendienteInventario(BeerOrderDto cervezaOrden);
 
    void cervezaOrdenUbicacionError(BeerOrderDto cervezaOrden);
 }

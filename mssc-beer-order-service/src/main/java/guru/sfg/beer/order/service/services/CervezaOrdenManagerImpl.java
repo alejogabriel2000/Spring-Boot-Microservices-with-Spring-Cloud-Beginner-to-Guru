@@ -1,5 +1,6 @@
 package guru.sfg.beer.order.service.services;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.messaging.Message;
@@ -34,28 +35,35 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
    public BeerOrder nuevaOrdenCerveza(BeerOrder beerOrder) {
       beerOrder.setId(null);
       beerOrder.setOrderStatus(OrdenEstadoCervezaEnum.NUEVO);
-      BeerOrder ordenCervezaGuardada = beerOrderRepository.save(beerOrder);
+      BeerOrder ordenCervezaGuardada = beerOrderRepository.saveAndFlush(beerOrder);
       enviarCervezaOrdenEvento(ordenCervezaGuardada, OrdenEventoCervezaEnum.VALIDAR_PEDIDO);
       return ordenCervezaGuardada;
    }
 
+   @Transactional
    @Override
    public void procesarValidacionResponse(UUID cervezaOrdenId, Boolean esValido) {
-      BeerOrder beerOrder = beerOrderRepository.getOne(cervezaOrdenId);
-      if (esValido) {
-         enviarCervezaOrdenEvento(beerOrder, OrdenEventoCervezaEnum.VALIDACION_APROBADA);
-         BeerOrder ordenValidada = beerOrderRepository.findOneById(cervezaOrdenId);
-         enviarCervezaOrdenEvento(beerOrder, OrdenEventoCervezaEnum.ASIGNAR_PEDIDO);
-      } else {
-         enviarCervezaOrdenEvento(beerOrder, OrdenEventoCervezaEnum.VALIDACION_FALLIDA);
-      }
+
+      Optional<BeerOrder> cervezaOrdenOptional = beerOrderRepository.findById(cervezaOrdenId);
+
+      cervezaOrdenOptional.ifPresentOrElse(cervezaOrden -> {
+         if (esValido) {
+            enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.VALIDACION_APROBADA);
+            BeerOrder ordenValidada = beerOrderRepository.findById(cervezaOrdenId).get();
+            enviarCervezaOrdenEvento(ordenValidada, OrdenEventoCervezaEnum.ASIGNAR_PEDIDO);
+         } else {
+            enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.VALIDACION_FALLIDA);
+         }
+      }, () -> log.error("Orden no encontrada. Id: " + cervezaOrdenId));
    }
 
    @Override
    public void cervezaOrdenUbicacionAprobado(BeerOrderDto cervezaOrdenDto) {
-      BeerOrder cervezaOrden = beerOrderRepository.getOne(cervezaOrdenDto.getId());
-      enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.ASIGNACION_EXITOSA);
-      actualizarUbicacionCantidad(cervezaOrdenDto, cervezaOrden);
+      Optional<BeerOrder> cervezaOrdenOptional = beerOrderRepository.findById(cervezaOrdenDto.getId());
+      cervezaOrdenOptional.ifPresentOrElse(cervezaOrden -> {
+         enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.ASIGNACION_EXITOSA);
+         actualizarUbicacionCantidad(cervezaOrdenDto, cervezaOrden);
+      }, () -> log.error("Orden no encontrada. Id: " + cervezaOrdenDto.getId()));
    }
 
    private void actualizarUbicacionCantidad(BeerOrderDto cervezaOrdenDto, BeerOrder cervezaOrden) {
@@ -72,31 +80,42 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
    }
 
    @Override
-   public void cervezaOrdenUbicaionPendienteInventario(BeerOrderDto cervezaOrdenDto) {
-      BeerOrder cervezaOrden = beerOrderRepository.getOne(cervezaOrdenDto.getId());
-      enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.ASIGNACION_SIN_INVENTARIO);
-      actualizarUbicacionCantidad(cervezaOrdenDto, cervezaOrden);
+   public void cervezaOrdenUbicacionPendienteInventario(BeerOrderDto cervezaOrdenDto) {
+
+      Optional<BeerOrder> cervezaOrdenOptional = beerOrderRepository.findById(cervezaOrdenDto.getId());
+
+      cervezaOrdenOptional.ifPresentOrElse(cervezaOrden -> {
+         enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.ASIGNACION_SIN_INVENTARIO);
+         actualizarUbicacionCantidad(cervezaOrdenDto, cervezaOrden);
+      }, () -> log.error("Orden no encontrada. Id: " + cervezaOrdenDto.getId()));
    }
 
    @Override
    public void cervezaOrdenUbicacionError(BeerOrderDto cervezaOrdenDto) {
-      BeerOrder cervezaOrden = beerOrderRepository.getOne(cervezaOrdenDto.getId());
-      enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.ASIGNACION_FALLIDA);
+      Optional<BeerOrder> cervezaOrdenOptional = beerOrderRepository.findById(cervezaOrdenDto.getId());
+
+      cervezaOrdenOptional.ifPresentOrElse(cervezaOrden -> {
+         enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.ASIGNACION_FALLIDA);
+      }, () -> log.error("Orden no encontrada. Id: " + cervezaOrdenDto.getId()));
    }
 
    private void enviarCervezaOrdenEvento(BeerOrder beerOrder, OrdenEventoCervezaEnum ordenEventoCervezaEnum) {
       StateMachine<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> sm = build(beerOrder);
-      Message msg = MessageBuilder.withPayload(ordenEventoCervezaEnum).setHeader(ORDEN_ID_HEADER, beerOrder.getId().toString()).build();
+      Message msg = MessageBuilder.withPayload(ordenEventoCervezaEnum)
+                                  .setHeader(ORDEN_ID_HEADER, beerOrder.getId().toString())
+                                  .build();
       sm.sendEvent(msg);
    }
 
    private StateMachine<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> build(BeerOrder beerOrder) {
       StateMachine<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> sm = stateMachineFactory.getStateMachine(beerOrder.getId());
       sm.stop();
-      sm.getStateMachineAccessor().doWithAllRegions(sma -> {
+      sm.getStateMachineAccessor()
+        .doWithAllRegions(sma -> {
          sma.addStateMachineInterceptor(cervezaOrdenEstadoCambioInterceptor);
          sma.resetStateMachine(new DefaultStateMachineContext<>(beerOrder.getOrderStatus(), null, null, null));
       });
+      sm.start();
       return sm;
    }
 }

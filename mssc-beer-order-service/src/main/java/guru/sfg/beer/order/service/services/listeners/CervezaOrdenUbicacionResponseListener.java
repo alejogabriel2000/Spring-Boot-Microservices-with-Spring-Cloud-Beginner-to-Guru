@@ -23,7 +23,7 @@ public class CervezaOrdenUbicacionResponseListener {
          cervezaOrdenManager.cervezaOrdenUbicacionAprobado(response.getCervezaOrden());
       } else if (!response.getAsignacionError() && response.getPendienteInventario()) {
          // Inventario pendiente
-         cervezaOrdenManager.cervezaOrdenUbicaionPendienteInventario(response.getCervezaOrden());
+         cervezaOrdenManager.cervezaOrdenUbicacionPendienteInventario(response.getCervezaOrden());
       } else if (response.getAsignacionError()) {
          //Ubicacion error
          cervezaOrdenManager.cervezaOrdenUbicacionError(response.getCervezaOrden());

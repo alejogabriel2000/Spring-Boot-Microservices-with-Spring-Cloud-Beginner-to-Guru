@@ -32,6 +32,7 @@ import guru.sfg.brewery.model.CervezaListaPaginada;
 import static com.github.jenspiegsa.wiremockextension.ManagedWireMockServer.with;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.awaitility.Awaitility.await;
 import static org.jgroups.util.Util.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -100,7 +101,11 @@ public class CervezaOrdenManagerImplIT {
       BeerOrder cervezaOrden = crearOrdenCerveza();
       BeerOrder cervezaOrdenGuardada = cervezaOrdenManager.nuevaOrdenCerveza(cervezaOrden);
 
-      Thread.sleep(5000);
+      await().untilAsserted(() -> {
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).get();
+
+         assertEquals(OrdenEstadoCervezaEnum.ASIGNADO_PENDIENTE, encontrarOrden.getOrderStatus());
+      });
 
       BeerOrder cervezaOrdenGuardada2 = beerOrderRepository.findById(cervezaOrden.getId()).get();
       assertNotNull(cervezaOrdenGuardada);

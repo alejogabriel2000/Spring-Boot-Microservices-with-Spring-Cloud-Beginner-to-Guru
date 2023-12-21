@@ -31,7 +31,6 @@ public class AsignarOrdenAction implements Action<OrdenEstadoCervezaEnum, OrdenE
 
    @Override
    public void execute(StateContext<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> stateContext) {
-
       String cervezaOrdenId = (String) stateContext.getMessage().getHeaders().get(CervezaOrdenManagerImpl.ORDEN_ID_HEADER);
       Optional<BeerOrder> cervezaOrdenOptional = beerOrderRepository.findById(UUID.fromString(cervezaOrdenId));
       cervezaOrdenOptional.ifPresentOrElse(cervezaOrden -> {

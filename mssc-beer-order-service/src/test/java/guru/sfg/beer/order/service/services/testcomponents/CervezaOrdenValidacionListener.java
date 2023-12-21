@@ -21,13 +21,16 @@ public class CervezaOrdenValidacionListener {
    @JmsListener(destination = JmsConfig.VALIDATE_ORDER_QUEUE)
    public void listar(Message mensaje) {
 
+      boolean esValido = true;
       ValidarOrdenRequest request = (ValidarOrdenRequest) mensaje.getPayload();
 
-      System.out.println("###########################");
+      if (request.getCervezaOrden().getCustomerRef() != null && request.getCervezaOrden().getCustomerRef().equals("fallo-validacion")) {
+         esValido = false;
+      }
 
       jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_RESPONSE_QUEUE,
                                  ValidarOrderResponse.builder()
-                                                     .esValido(true)
+                                                     .esValido(esValido)
                                                      .ordenId(request.getCervezaOrden().getId())
                                                      .build());
    }

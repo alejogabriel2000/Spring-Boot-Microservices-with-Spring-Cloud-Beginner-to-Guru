@@ -1,6 +1,5 @@
 package guru.sfg.beer.order.service.services;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -27,7 +26,6 @@ import guru.sfg.beer.order.service.repositories.BeerOrderRepository;
 import guru.sfg.beer.order.service.repositories.CustomerRepository;
 import guru.sfg.beer.order.service.services.cerveza.CervezaServiceImpl;
 import guru.sfg.brewery.model.CervezaDTO;
-import guru.sfg.brewery.model.CervezaListaPaginada;
 
 import static com.github.jenspiegsa.wiremockextension.ManagedWireMockServer.with;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
@@ -116,6 +114,21 @@ public class CervezaOrdenManagerImplIT {
       assertEquals(OrdenEstadoCervezaEnum.ASIGNADO, cervezaOrdenGuardada2.getOrderStatus());
       cervezaOrdenGuardada2.getBeerOrderLines().forEach(line -> {
          assertEquals(line.getOrderQuantity(), line.getQuantityAllocated());
+      });
+   }
+
+   @Test
+   void testValidacionFalla() throws JsonProcessingException {
+      CervezaDTO cervezaDTO = CervezaDTO.builder().id(cervezaID).upc("12345").build();
+      wireMockServer.stubFor(get(CervezaServiceImpl.CERVEZA_UPC_PATH_V1 + "12345")
+                                .willReturn(okJson(objectMapper.writeValueAsString(cervezaDTO))));
+      BeerOrder cervezaOrden = crearOrdenCerveza();
+      cervezaOrden.setCustomerRef("fallo-validacion");
+      BeerOrder cervezaOrdenGuardada = cervezaOrdenManager.nuevaOrdenCerveza(cervezaOrden);
+
+      await().untilAsserted(() -> {
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).get();
+         assertEquals(OrdenEstadoCervezaEnum.VALIDACION_EXCEPCION, encontrarOrden.getOrderStatus());
       });
    }
 

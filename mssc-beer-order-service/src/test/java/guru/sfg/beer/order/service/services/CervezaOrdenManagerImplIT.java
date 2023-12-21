@@ -91,7 +91,7 @@ public class CervezaOrdenManagerImplIT {
    }
 
    @Test
-   public void testNuevoAUbicacion() throws JsonProcessingException {
+   void testNuevoAUbicacion() throws JsonProcessingException {
       CervezaDTO cervezaDTO = CervezaDTO.builder().id(cervezaID).upc("12345").build();
       wireMockServer.stubFor(get(CervezaServiceImpl.CERVEZA_UPC_PATH_V1 + "12345")
                                 .willReturn(okJson(objectMapper.writeValueAsString(cervezaDTO))));
@@ -153,5 +153,35 @@ public class CervezaOrdenManagerImplIT {
 
       BeerOrder cervezaOrdenRetirado = beerOrderRepository.findById(cervezaOrdenGuardada.getId()).get();
       assertEquals(OrdenEstadoCervezaEnum.RETIRADO, cervezaOrdenRetirado.getOrderStatus());
+   }
+
+   @Test
+   void testUbicacionFalla() throws JsonProcessingException {
+      CervezaDTO cervezaDTO = CervezaDTO.builder().id(cervezaID).upc("12345").build();
+      wireMockServer.stubFor(get(CervezaServiceImpl.CERVEZA_UPC_PATH_V1 + "12345")
+                                .willReturn(okJson(objectMapper.writeValueAsString(cervezaDTO))));
+      BeerOrder cervezaOrden = crearOrdenCerveza();
+      cervezaOrden.setCustomerRef("fallo-ubicacion");
+      BeerOrder cervezaOrdenGuardada = cervezaOrdenManager.nuevaOrdenCerveza(cervezaOrden);
+
+      await().untilAsserted(() -> {
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).get();
+         assertEquals(OrdenEstadoCervezaEnum.ASIGNACION_EXCEPCION, encontrarOrden.getOrderStatus());
+      });
+   }
+
+   @Test
+   void testUbicacionParcial() throws JsonProcessingException {
+      CervezaDTO cervezaDTO = CervezaDTO.builder().id(cervezaID).upc("12345").build();
+      wireMockServer.stubFor(get(CervezaServiceImpl.CERVEZA_UPC_PATH_V1 + "12345")
+                                .willReturn(okJson(objectMapper.writeValueAsString(cervezaDTO))));
+      BeerOrder cervezaOrden = crearOrdenCerveza();
+      cervezaOrden.setCustomerRef("ubicacion-parcial");
+      BeerOrder cervezaOrdenGuardada = cervezaOrdenManager.nuevaOrdenCerveza(cervezaOrden);
+
+      await().untilAsserted(() -> {
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).get();
+         assertEquals(OrdenEstadoCervezaEnum.INVENTARIO_PENDIENTE, encontrarOrden.getOrderStatus());
+      });
    }
 }

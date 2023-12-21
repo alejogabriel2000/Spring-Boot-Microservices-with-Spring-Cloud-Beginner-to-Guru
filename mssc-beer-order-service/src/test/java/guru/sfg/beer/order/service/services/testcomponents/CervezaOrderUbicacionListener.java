@@ -20,18 +20,32 @@ public class CervezaOrderUbicacionListener {
 
    @JmsListener(destination = JmsConfig.ASIGNAR_ORDEN_QUEUE)
    public void listen(Message msg) {
-
       AsignarOrdenRequest request = (AsignarOrdenRequest) msg.getPayload();
+      boolean inventarioPendiente = false;
+      boolean asignacionError = false;
 
+      if (request.getCervezaOrden().getCustomerRef() != null && request.getCervezaOrden().getCustomerRef().equals("ubicacion-parcial")) {
+         inventarioPendiente = true;
+      }
+
+      if (request.getCervezaOrden().getCustomerRef() != null && request.getCervezaOrden().getCustomerRef().equals("fallo-ubicacion")) {
+         asignacionError = true;
+      }
+
+      boolean finalInventarioPendiente = inventarioPendiente;
       request.getCervezaOrden().getBeerOrderLines().forEach(cervezaOrdenLineDTO -> {
-         cervezaOrdenLineDTO.setQuantityAllocated(cervezaOrdenLineDTO.getOrderQuantity());
+         if(finalInventarioPendiente) {
+            cervezaOrdenLineDTO.setQuantityAllocated(cervezaOrdenLineDTO.getOrderQuantity() - 1);
+         } else {
+            cervezaOrdenLineDTO.setQuantityAllocated(cervezaOrdenLineDTO.getOrderQuantity());
+         }
       });
 
       jmsTemplate.convertAndSend(JmsConfig.ASIGNAR_ORDEN_RESPONSE_QUEUE,
                                  AsignarOrdenResponse.builder()
                                     .cervezaOrden(request.getCervezaOrden())
-                                    .pendienteInventario(false)
-                                    .asignacionError(false)
+                                    .pendienteInventario(inventarioPendiente)
+                                    .asignacionError(asignacionError)
                                     .build());
    }
 }

@@ -22,6 +22,7 @@ public class OrdenCervezaStateMachineConfig extends StateMachineConfigurerAdapte
    private final Action<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> asignarOrdenAction;
    private final Action<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> validacionFallaAction;
    private final Action<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> asignarFallaAction;
+   private final Action<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> desasignarOrdenAction;
 
    @Override
    public void configure(StateMachineStateConfigurer<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> estados) throws Exception {
@@ -78,6 +79,7 @@ public class OrdenCervezaStateMachineConfig extends StateMachineConfigurerAdapte
              .event(OrdenEventoCervezaEnum.PEDIDO_CERVEZA_ENTREGADO)
          .and().withExternal()
               .source(OrdenEstadoCervezaEnum.ASIGNADO).target(OrdenEstadoCervezaEnum.CANCELADO)
-              .event(OrdenEventoCervezaEnum.CANCELAR_ORDEN);
+              .event(OrdenEventoCervezaEnum.CANCELAR_ORDEN)
+              .action(desasignarOrdenAction);
    }
 }

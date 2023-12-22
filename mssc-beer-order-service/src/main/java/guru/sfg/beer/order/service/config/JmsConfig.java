@@ -14,7 +14,7 @@ public class JmsConfig {
     public static final String ASIGNAR_ORDEN_QUEUE = "asignar-orden";
     public static final String ASIGNAR_ORDEN_RESPONSE_QUEUE = "asignar-orden-response";
     public static final String ASIGNAR_FALLA_QUEUE = "asignar-falla";
-
+    public static final String DESASIGNAR_ORDEN_QUEUE = "desasignar-orden";
 
     @Bean // Serialize message content to json using TextMessage
     public MessageConverter jacksonJmsMessageConverter(ObjectMapper objectMapper) {

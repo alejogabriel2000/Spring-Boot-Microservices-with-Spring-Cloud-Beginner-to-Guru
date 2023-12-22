@@ -20,18 +20,25 @@ public class CervezaOrdenValidacionListener {
 
    @JmsListener(destination = JmsConfig.VALIDATE_ORDER_QUEUE)
    public void listar(Message mensaje) {
-
       boolean esValido = true;
+      boolean envioRespuesta = true;
+
       ValidarOrdenRequest request = (ValidarOrdenRequest) mensaje.getPayload();
 
-      if (request.getCervezaOrden().getCustomerRef() != null && request.getCervezaOrden().getCustomerRef().equals("fallo-validacion")) {
-         esValido = false;
+      if (request.getCervezaOrden().getCustomerRef() != null) {
+         if (request.getCervezaOrden().getCustomerRef().equals("fallo-validacion")) {
+            esValido = false;
+         } else if (request.getCervezaOrden().getCustomerRef().equals("no-se-valido")) {
+            envioRespuesta = false;
+         }
       }
 
-      jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_RESPONSE_QUEUE,
-                                 ValidarOrderResponse.builder()
-                                                     .esValido(esValido)
-                                                     .ordenId(request.getCervezaOrden().getId())
-                                                     .build());
+      if (envioRespuesta) {
+         jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_RESPONSE_QUEUE,
+                                    ValidarOrderResponse.builder()
+                                                        .esValido(esValido)
+                                                        .ordenId(request.getCervezaOrden().getId())
+                                                        .build());
+      }
    }
 }

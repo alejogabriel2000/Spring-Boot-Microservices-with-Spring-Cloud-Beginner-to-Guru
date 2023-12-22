@@ -3,6 +3,8 @@ package guru.sfg.beer.order.service.services;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.persistence.EntityManager;
+
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
@@ -29,6 +31,7 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
    private final StateMachineFactory<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> stateMachineFactory;
    private final BeerOrderRepository beerOrderRepository;
    private final CervezaOrdenEstadoCambioInterceptor cervezaOrdenEstadoCambioInterceptor;
+   private final EntityManager entityManager;
 
    @Transactional
    @Override
@@ -44,6 +47,7 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
    @Override
    public void procesarValidacionResponse(UUID cervezaOrdenId, Boolean esValido) {
 
+      entityManager.flush();
       Optional<BeerOrder> cervezaOrdenOptional = beerOrderRepository.findById(cervezaOrdenId);
 
       cervezaOrdenOptional.ifPresentOrElse(cervezaOrden -> {
@@ -107,6 +111,13 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
       Optional<BeerOrder> cervezaOrdenOptional = beerOrderRepository.findById(id);
       cervezaOrdenOptional.ifPresentOrElse(cervezaOrden -> {
          enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.PEDIDO_CERVEZA_ENTREGADO);
+      }, () -> log.error("Orden no encontrada. Id: " + id));
+   }
+
+   @Override
+   public void cancelarOrden(UUID id) {
+      beerOrderRepository.findById(id).ifPresentOrElse(cervezaOrden -> {
+         enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.CANCELAR_ORDEN);
       }, () -> log.error("Orden no encontrada. Id: " + id));
    }
 

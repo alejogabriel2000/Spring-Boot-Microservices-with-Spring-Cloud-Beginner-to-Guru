@@ -29,6 +29,7 @@ import guru.sfg.beer.order.service.repositories.BeerOrderRepository;
 import guru.sfg.beer.order.service.repositories.CustomerRepository;
 import guru.sfg.beer.order.service.services.cerveza.CervezaServiceImpl;
 import guru.sfg.brewery.model.CervezaDTO;
+import guru.sfg.brewery.model.events.DesasignarOrdenRequest;
 import guru.sfg.brewery.model.events.UbicacionFallaEvent;
 
 import static com.github.jenspiegsa.wiremockextension.ManagedWireMockServer.with;
@@ -194,5 +195,76 @@ class CervezaOrdenManagerImplIT {
          BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
          assertEquals(OrdenEstadoCervezaEnum.INVENTARIO_PENDIENTE, Objects.requireNonNull(encontrarOrden).getOrderStatus());
       });
+   }
+
+   @Test
+   void testValidacionPendienteACancelar() throws JsonProcessingException {
+      CervezaDTO cervezaDTO = CervezaDTO.builder().id(cervezaID).upc("12345").build();
+      wireMockServer.stubFor(get(CervezaServiceImpl.CERVEZA_UPC_PATH_V1 + "12345")
+                                .willReturn(okJson(objectMapper.writeValueAsString(cervezaDTO))));
+      BeerOrder cervezaOrden = crearOrdenCerveza();
+      cervezaOrden.setCustomerRef("no-se-valido");
+      BeerOrder cervezaOrdenGuardada = cervezaOrdenManager.nuevaOrdenCerveza(cervezaOrden);
+
+      await().untilAsserted(() -> {
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
+         assertEquals(OrdenEstadoCervezaEnum.VALIDACION_PENDIENTE, Objects.requireNonNull(encontrarOrden).getOrderStatus());
+      });
+
+      cervezaOrdenManager.cancelarOrden(cervezaOrdenGuardada.getId());
+
+      await().untilAsserted(() -> {
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
+         assertEquals(OrdenEstadoCervezaEnum.CANCELADO, Objects.requireNonNull(encontrarOrden).getOrderStatus());
+      });
+   }
+
+   @Test
+   void testUbicacionPendienteACancelar() throws JsonProcessingException {
+      CervezaDTO cervezaDTO = CervezaDTO.builder().id(cervezaID).upc("12345").build();
+      wireMockServer.stubFor(get(CervezaServiceImpl.CERVEZA_UPC_PATH_V1 + "12345")
+                                .willReturn(okJson(objectMapper.writeValueAsString(cervezaDTO))));
+      BeerOrder cervezaOrden = crearOrdenCerveza();
+      cervezaOrden.setCustomerRef("no-se-ubico");
+      BeerOrder cervezaOrdenGuardada = cervezaOrdenManager.nuevaOrdenCerveza(cervezaOrden);
+
+      await().untilAsserted(() -> {
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
+         assertEquals(OrdenEstadoCervezaEnum.ASIGNADO_PENDIENTE, Objects.requireNonNull(encontrarOrden).getOrderStatus());
+      });
+
+      cervezaOrdenManager.cancelarOrden(cervezaOrdenGuardada.getId());
+
+      await().untilAsserted(() -> {
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
+         assertEquals(OrdenEstadoCervezaEnum.CANCELADO, Objects.requireNonNull(encontrarOrden).getOrderStatus());
+      });
+   }
+
+   @Test
+   void testUbicacionACancelar() throws JsonProcessingException {
+      CervezaDTO cervezaDTO = CervezaDTO.builder().id(cervezaID).upc("12345").build();
+      wireMockServer.stubFor(get(CervezaServiceImpl.CERVEZA_UPC_PATH_V1 + "12345")
+                                .willReturn(okJson(objectMapper.writeValueAsString(cervezaDTO))));
+      BeerOrder cervezaOrden = crearOrdenCerveza();
+
+      BeerOrder cervezaOrdenGuardada = cervezaOrdenManager.nuevaOrdenCerveza(cervezaOrden);
+
+      await().untilAsserted(() -> {
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
+         assertEquals(OrdenEstadoCervezaEnum.ASIGNADO, Objects.requireNonNull(encontrarOrden).getOrderStatus());
+      });
+
+      cervezaOrdenManager.cancelarOrden(cervezaOrdenGuardada.getId());
+
+      await().untilAsserted(() -> {
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
+         assertEquals(OrdenEstadoCervezaEnum.CANCELADO, Objects.requireNonNull(encontrarOrden).getOrderStatus());
+      });
+
+      DesasignarOrdenRequest desasignarOrdenRequest = (DesasignarOrdenRequest) jmsTemplate.receiveAndConvert(JmsConfig.DESASIGNAR_ORDEN_QUEUE);
+
+      assertNotNull(desasignarOrdenRequest);
+      assertThat(Objects.requireNonNull(desasignarOrdenRequest).getCervezaOrden().getId()).isEqualTo(cervezaOrdenGuardada.getId());
    }
 }

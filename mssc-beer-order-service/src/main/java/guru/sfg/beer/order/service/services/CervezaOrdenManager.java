@@ -18,4 +18,6 @@ public interface CervezaOrdenManager {
    void cervezaOrdenUbicacionError(BeerOrderDto cervezaOrden);
 
    void cervezaOrdenTomar(UUID id);
+
+   void cancelarOrden(UUID id);
 }

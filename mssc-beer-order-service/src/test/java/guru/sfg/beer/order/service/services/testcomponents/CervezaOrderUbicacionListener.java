@@ -23,13 +23,16 @@ public class CervezaOrderUbicacionListener {
       AsignarOrdenRequest request = (AsignarOrdenRequest) msg.getPayload();
       boolean inventarioPendiente = false;
       boolean asignacionError = false;
+      boolean envioRespuesta = true;
 
-      if (request.getCervezaOrden().getCustomerRef() != null && request.getCervezaOrden().getCustomerRef().equals("ubicacion-parcial")) {
-         inventarioPendiente = true;
-      }
-
-      if (request.getCervezaOrden().getCustomerRef() != null && request.getCervezaOrden().getCustomerRef().equals("fallo-ubicacion")) {
-         asignacionError = true;
+      if (request.getCervezaOrden().getCustomerRef() != null) {
+         if (request.getCervezaOrden().getCustomerRef().equals("fallo-ubicacion")) {
+            asignacionError = true;
+         } else if (request.getCervezaOrden().getCustomerRef().equals("no-se-ubico")) {
+            envioRespuesta = false;
+         } else if (request.getCervezaOrden().getCustomerRef().equals("ubicacion-parcial")) {
+            inventarioPendiente = true;
+         }
       }
 
       boolean finalInventarioPendiente = inventarioPendiente;
@@ -41,11 +44,13 @@ public class CervezaOrderUbicacionListener {
          }
       });
 
-      jmsTemplate.convertAndSend(JmsConfig.ASIGNAR_ORDEN_RESPONSE_QUEUE,
-                                 AsignarOrdenResponse.builder()
-                                    .cervezaOrden(request.getCervezaOrden())
-                                    .pendienteInventario(inventarioPendiente)
-                                    .asignacionError(asignacionError)
-                                    .build());
+      if (envioRespuesta) {
+         jmsTemplate.convertAndSend(JmsConfig.ASIGNAR_ORDEN_RESPONSE_QUEUE,
+                                    AsignarOrdenResponse.builder()
+                                                        .cervezaOrden(request.getCervezaOrden())
+                                                        .pendienteInventario(inventarioPendiente)
+                                                        .asignacionError(asignacionError)
+                                                        .build());
+      }
    }
 }

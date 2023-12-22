@@ -1,6 +1,7 @@
 package guru.sfg.beer.order.service.services;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.jms.core.JmsTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,6 +20,7 @@ import com.github.jenspiegsa.wiremockextension.WireMockExtension;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 
+import guru.sfg.beer.order.service.config.JmsConfig;
 import guru.sfg.beer.order.service.domain.BeerOrder;
 import guru.sfg.beer.order.service.domain.BeerOrderLine;
 import guru.sfg.beer.order.service.domain.Customer;
@@ -26,17 +29,19 @@ import guru.sfg.beer.order.service.repositories.BeerOrderRepository;
 import guru.sfg.beer.order.service.repositories.CustomerRepository;
 import guru.sfg.beer.order.service.services.cerveza.CervezaServiceImpl;
 import guru.sfg.brewery.model.CervezaDTO;
+import guru.sfg.brewery.model.events.UbicacionFallaEvent;
 
 import static com.github.jenspiegsa.wiremockextension.ManagedWireMockServer.with;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.jgroups.util.Util.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(WireMockExtension.class)
 @SpringBootTest
-public class CervezaOrdenManagerImplIT {
+class CervezaOrdenManagerImplIT {
 
    @Autowired
    CervezaOrdenManager cervezaOrdenManager;
@@ -52,6 +57,9 @@ public class CervezaOrdenManagerImplIT {
 
    @Autowired
    WireMockServer wireMockServer;
+
+   @Autowired
+   JmsTemplate jmsTemplate;
 
    Customer testCustomer;
 
@@ -99,22 +107,20 @@ public class CervezaOrdenManagerImplIT {
       BeerOrder cervezaOrdenGuardada = cervezaOrdenManager.nuevaOrdenCerveza(cervezaOrden);
 
       await().untilAsserted(() -> {
-         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).get();
-         assertEquals(OrdenEstadoCervezaEnum.ASIGNADO, encontrarOrden.getOrderStatus());
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
+         assertEquals(OrdenEstadoCervezaEnum.ASIGNADO, Objects.requireNonNull(encontrarOrden).getOrderStatus());
       });
 
       await().untilAsserted(() -> {
-         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).get();
-         BeerOrderLine line = encontrarOrden.getBeerOrderLines().iterator().next();
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
+         BeerOrderLine line = Objects.requireNonNull(encontrarOrden).getBeerOrderLines().iterator().next();
          assertEquals(line.getOrderQuantity(), line.getQuantityAllocated());
       });
 
-      BeerOrder cervezaOrdenGuardada2 = beerOrderRepository.findById(cervezaOrden.getId()).get();
+      BeerOrder cervezaOrdenGuardada2 = beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
       assertNotNull(cervezaOrdenGuardada2);
-      assertEquals(OrdenEstadoCervezaEnum.ASIGNADO, cervezaOrdenGuardada2.getOrderStatus());
-      cervezaOrdenGuardada2.getBeerOrderLines().forEach(line -> {
-         assertEquals(line.getOrderQuantity(), line.getQuantityAllocated());
-      });
+      assertEquals(OrdenEstadoCervezaEnum.ASIGNADO, Objects.requireNonNull(cervezaOrdenGuardada2).getOrderStatus());
+      cervezaOrdenGuardada2.getBeerOrderLines().forEach(line -> assertEquals(line.getOrderQuantity(), line.getQuantityAllocated()));
    }
 
    @Test
@@ -127,8 +133,8 @@ public class CervezaOrdenManagerImplIT {
       BeerOrder cervezaOrdenGuardada = cervezaOrdenManager.nuevaOrdenCerveza(cervezaOrden);
 
       await().untilAsserted(() -> {
-         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).get();
-         assertEquals(OrdenEstadoCervezaEnum.VALIDACION_EXCEPCION, encontrarOrden.getOrderStatus());
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
+         assertEquals(OrdenEstadoCervezaEnum.VALIDACION_EXCEPCION, Objects.requireNonNull(encontrarOrden).getOrderStatus());
       });
    }
 
@@ -141,18 +147,18 @@ public class CervezaOrdenManagerImplIT {
       BeerOrder cervezaOrdenGuardada = cervezaOrdenManager.nuevaOrdenCerveza(cervezaOrden);
 
       await().untilAsserted(() -> {
-         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).get();
-         assertEquals(OrdenEstadoCervezaEnum.ASIGNADO, encontrarOrden.getOrderStatus());
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
+         assertEquals(OrdenEstadoCervezaEnum.ASIGNADO, Objects.requireNonNull(encontrarOrden).getOrderStatus());
       });
 
       cervezaOrdenManager.cervezaOrdenTomar(cervezaOrdenGuardada.getId());
       await().untilAsserted(() -> {
-         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).get();
-         assertEquals(OrdenEstadoCervezaEnum.RETIRADO, encontrarOrden.getOrderStatus());
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
+         assertEquals(OrdenEstadoCervezaEnum.RETIRADO, Objects.requireNonNull(encontrarOrden).getOrderStatus());
       });
 
-      BeerOrder cervezaOrdenRetirado = beerOrderRepository.findById(cervezaOrdenGuardada.getId()).get();
-      assertEquals(OrdenEstadoCervezaEnum.RETIRADO, cervezaOrdenRetirado.getOrderStatus());
+      BeerOrder cervezaOrdenRetirado = beerOrderRepository.findById(cervezaOrdenGuardada.getId()).orElse(null);
+      assertEquals(OrdenEstadoCervezaEnum.RETIRADO, Objects.requireNonNull(cervezaOrdenRetirado).getOrderStatus());
    }
 
    @Test
@@ -165,9 +171,14 @@ public class CervezaOrdenManagerImplIT {
       BeerOrder cervezaOrdenGuardada = cervezaOrdenManager.nuevaOrdenCerveza(cervezaOrden);
 
       await().untilAsserted(() -> {
-         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).get();
-         assertEquals(OrdenEstadoCervezaEnum.ASIGNACION_EXCEPCION, encontrarOrden.getOrderStatus());
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
+         assertEquals(OrdenEstadoCervezaEnum.ASIGNACION_EXCEPCION, Objects.requireNonNull(encontrarOrden).getOrderStatus());
       });
+
+      UbicacionFallaEvent ubicacionFallaEvent = (UbicacionFallaEvent) jmsTemplate.receiveAndConvert(JmsConfig.ASIGNAR_FALLA_QUEUE);
+
+      assertNotNull(ubicacionFallaEvent);
+      assertThat(Objects.requireNonNull(ubicacionFallaEvent).getOrdenId()).isEqualTo(cervezaOrdenGuardada.getId());
    }
 
    @Test
@@ -180,8 +191,8 @@ public class CervezaOrdenManagerImplIT {
       BeerOrder cervezaOrdenGuardada = cervezaOrdenManager.nuevaOrdenCerveza(cervezaOrden);
 
       await().untilAsserted(() -> {
-         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).get();
-         assertEquals(OrdenEstadoCervezaEnum.INVENTARIO_PENDIENTE, encontrarOrden.getOrderStatus());
+         BeerOrder encontrarOrden =  beerOrderRepository.findById(cervezaOrden.getId()).orElse(null);
+         assertEquals(OrdenEstadoCervezaEnum.INVENTARIO_PENDIENTE, Objects.requireNonNull(encontrarOrden).getOrderStatus());
       });
    }
 }

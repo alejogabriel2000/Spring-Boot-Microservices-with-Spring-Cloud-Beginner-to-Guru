@@ -9,13 +9,11 @@ import org.springframework.jms.support.converter.MessageType;
 
 @Configuration
 public class JmsConfig {
-
-    //public static final String BREWING_REQUEST_QUEUE = "brewing-request";
-    //public static final String NEW_INVENTORY_QUEUE = "new-inventory";
     public static final String VALIDATE_ORDER_RESPONSE_QUEUE = "validate-order-response";
     public static final String VALIDATE_ORDER_QUEUE = "validate-order";
     public static final String ASIGNAR_ORDEN_QUEUE = "asignar-orden";
     public static final String ASIGNAR_ORDEN_RESPONSE_QUEUE = "asignar-orden-response";
+    public static final String ASIGNAR_FALLA_QUEUE = "asignar-falla";
 
 
     @Bean // Serialize message content to json using TextMessage

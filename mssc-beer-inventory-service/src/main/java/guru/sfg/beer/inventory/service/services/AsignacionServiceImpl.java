@@ -20,13 +20,13 @@ public class AsignacionServiceImpl implements AsignacionService {
    private final BeerInventoryRepository beerInventoryRepository;
 
    @Override
-   public Boolean asignarOrden(BeerOrderDto beerOrderDto) {
-      log.debug("Asignacion de ordenId: " + beerOrderDto.getId());
+   public Boolean asignarOrden(BeerOrderDto cervezaOrdenDto) {
+      log.debug("Asignacion de ordenId: " + cervezaOrdenDto.getId());
 
       AtomicInteger totalOrdenada = new AtomicInteger();
       AtomicInteger totalAsignado = new AtomicInteger();
 
-      beerOrderDto.getBeerOrderLines().forEach(beerOrdenLine -> {
+      cervezaOrdenDto.getBeerOrderLines().forEach(beerOrdenLine -> {
          if ((((beerOrdenLine.getOrderQuantity() != null ? beerOrdenLine.getOrderQuantity() : 0)
             - (beerOrdenLine.getQuantityAllocated() != null ? beerOrdenLine.getQuantityAllocated() : 0 )) > 0 )) {
             asignarLineaPedidoCerveza(beerOrdenLine);
@@ -38,6 +38,19 @@ public class AsignacionServiceImpl implements AsignacionService {
 
       log.debug("Total ordenado: " + totalOrdenada.get() + " Total asignado: " + totalAsignado.get());
       return totalOrdenada.get() == totalAsignado.get();
+   }
+
+   @Override
+   public void desasignarOrden(BeerOrderDto cervezaOrdenDto) {
+      cervezaOrdenDto.getBeerOrderLines().forEach(cervezaOrdenLineDto -> {
+         BeerInventory cervezaInventario = BeerInventory.builder()
+            .beerId(cervezaOrdenLineDto.getBeerId())
+            .upc(cervezaOrdenLineDto.getUpc())
+            .quantityOnHand(cervezaOrdenLineDto.getQuantityAllocated())
+            .build();
+         BeerInventory inventarioGuardado = beerInventoryRepository.save(cervezaInventario);
+         log.debug("inventario Guardado para la cerveza upc: " + inventarioGuardado.getUpc() + " inventario id: " + inventarioGuardado.getId());
+      });
    }
 
    private void asignarLineaPedidoCerveza(BeerOrderLineDto beerOrdenLine) {

@@ -4,5 +4,7 @@ import guru.sfg.brewery.model.BeerOrderDto;
 
 public interface AsignacionService {
 
-   Boolean asignarOrden(BeerOrderDto beerOrderDto);
+   Boolean asignarOrden(BeerOrderDto cervezaOrdenDto);
+
+   void desasignarOrden(BeerOrderDto cervezaOrdenDto);
 }

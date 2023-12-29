@@ -2,6 +2,8 @@ package guru.sfg.beer.order.service.services;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.persistence.EntityManager;
 
@@ -31,7 +33,7 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
    private final StateMachineFactory<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> stateMachineFactory;
    private final BeerOrderRepository beerOrderRepository;
    private final CervezaOrdenEstadoCambioInterceptor cervezaOrdenEstadoCambioInterceptor;
-   private final EntityManager entityManager;
+   //private final EntityManager entityManager;
 
    @Transactional
    @Override
@@ -46,13 +48,14 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
    @Transactional
    @Override
    public void procesarValidacionResponse(UUID cervezaOrdenId, Boolean esValido) {
-
-      entityManager.flush();
+      //entityManager.flush();
       Optional<BeerOrder> cervezaOrdenOptional = beerOrderRepository.findById(cervezaOrdenId);
 
       cervezaOrdenOptional.ifPresentOrElse(cervezaOrden -> {
          if (esValido) {
             enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.VALIDACION_APROBADA);
+            // Esperar por el cambio de estado
+            esperarPorEstado(cervezaOrdenId, OrdenEstadoCervezaEnum.VALIDADO);
             BeerOrder ordenValidada = beerOrderRepository.findById(cervezaOrdenId).get();
             enviarCervezaOrdenEvento(ordenValidada, OrdenEventoCervezaEnum.ASIGNAR_PEDIDO);
          } else {
@@ -66,6 +69,7 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
       Optional<BeerOrder> cervezaOrdenOptional = beerOrderRepository.findById(cervezaOrdenDto.getId());
       cervezaOrdenOptional.ifPresentOrElse(cervezaOrden -> {
          enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.ASIGNACION_EXITOSA);
+         esperarPorEstado(cervezaOrden.getId(), OrdenEstadoCervezaEnum.ASIGNADO);
          actualizarUbicacionCantidad(cervezaOrdenDto);
       }, () -> log.error("Orden no encontrada. Id: " + cervezaOrdenDto.getId()));
    }
@@ -93,6 +97,7 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
 
       cervezaOrdenOptional.ifPresentOrElse(cervezaOrden -> {
          enviarCervezaOrdenEvento(cervezaOrden, OrdenEventoCervezaEnum.ASIGNACION_SIN_INVENTARIO);
+         esperarPorEstado(cervezaOrden.getId(), OrdenEstadoCervezaEnum.INVENTARIO_PENDIENTE);
          actualizarUbicacionCantidad(cervezaOrdenDto);
       }, () -> log.error("Orden no encontrada. Id: " + cervezaOrdenDto.getId()));
    }
@@ -127,6 +132,37 @@ public class CervezaOrdenManagerImpl implements CervezaOrdenManager {
                                   .setHeader(ORDEN_ID_HEADER, beerOrder.getId().toString())
                                   .build();
       sm.sendEvent(msg);
+   }
+
+   private void esperarPorEstado(UUID cervezaOrdenId, OrdenEstadoCervezaEnum estadoEnum) {
+
+      AtomicBoolean encontrado = new AtomicBoolean(false);
+      AtomicInteger conteoCiclo = new AtomicInteger(0);
+
+      while (!encontrado.get()) {
+         if (conteoCiclo.incrementAndGet() > 10) {
+            encontrado.set(true);
+            log.debug("Reiteracion de ciclos excedido");
+         }
+         beerOrderRepository.findById(cervezaOrdenId).ifPresentOrElse(cervezaOrden -> {
+            if (cervezaOrden.getOrderStatus().equals(estadoEnum)) {
+               encontrado.set(true);
+               log.debug("Orden Encontrada");
+            } else {
+               log.debug("Estado de la orden no es igual al esperado: " + estadoEnum.name() + " Encontrado: " + cervezaOrden.getOrderStatus().name());
+            }
+         }, () -> {
+            log.debug("Orden Id no encontrada");
+         });
+         if (!encontrado.get()) {
+            try {
+               log.debug("Durmiendo para reiterar");
+               Thread.sleep(100);
+            } catch (Exception e) {
+               // No hacer nada
+            }
+         }
+      }
    }
 
    private StateMachine<OrdenEstadoCervezaEnum, OrdenEventoCervezaEnum> build(BeerOrder beerOrder) {
